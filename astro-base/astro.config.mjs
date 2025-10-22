@@ -19,11 +19,11 @@ export default defineConfig({
     react(),
   ],
   adapter: cloudflare(),
-  image: {
-    // Cloudflare Pages의 자동 이미지 최적화와 충돌 방지
-    service: {
-      entrypoint: 'astro/assets/services/noop',
-      config: {},
-    },
-  },
+  // image: {
+  //   // Cloudflare Pages의 자동 이미지 최적화와 충돌 방지
+  //   service: {
+  //     entrypoint: 'astro/assets/services/noop',
+  //     config: {},
+  //   },
+  // },
 });
