@@ -18,7 +18,5 @@ export default defineConfig({
     tailwind({ applyBaseStyles: false }),
     react(),
   ],
-  adapter: cloudflare({
-    imageService: 'cloudflare', // cloudflare image resizing 서비스를 이용합니다.
-  }),
+  adapter: cloudflare(),
 });
