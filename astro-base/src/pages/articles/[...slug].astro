@@ -1,20 +1,154 @@
 ---
+import '../../styles/global.css';
+import '@/pages/articles/markdown.css';
+import { Tag, Calendar, Clock, ArrowLeft } from 'lucide-react';
+import DefaultLayout from '@/layouts/Default.astro';
+import { TableOfContents } from '@/components/react/TableOfContents';
+import GiscusContainer from '@/components/react/GiscusContainer';
+
 import { type CollectionEntry, getCollection, render } from 'astro:content';
-import BlogPost from '../../layouts/BlogPost.astro';
+
 
 export async function getStaticPaths() {
-  const posts = await getCollection('articles');
-  return posts.map((post) => ({
-    params: { slug: post.id },
-    props: post,
+  const articles = await getCollection('articles');
+  return articles.map((article) => ({
+    params: { slug: article.id },
+    props: article,
   }));
 }
 type Props = CollectionEntry<'articles'>;
 
-const post = Astro.props;
-const { Content } = await render(post);
+const article = Astro.props;
+const { Content, headings } = await render(article);
+
+// 관련 글 카테고리
+const allArticles = await getCollection('articles');
+const relatedArticles = allArticles.filter(a => a.id !== article.id && a.data.category === article.data.category);
+
 ---
 
-<BlogPost {...post.data}>
-  <Content />
-</BlogPost>
+<DefaultLayout title={article.data.title} description={article.data.description} currentPage="articles">
+  <article class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 sm:py-16 lg:py-24">
+    <div class="grid grid-cols-12 gap-8 lg:gap-12">
+      {/* Main Content */}
+      <div class="col-span-12 xl:col-span-9">
+        {/* Back Button */}
+        <a 
+          href="/articles" 
+          class="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors mb-8"
+        >
+          <ArrowLeft className="w-4 h-4" />
+          <span>Back to Articles</span>
+        </a>
+
+        {/* Post Header */}
+        <header class="mb-12 space-y-6">
+          {/* Meta */}
+          <div class="flex flex-wrap items-center gap-4 text-sm text-muted-foreground">
+            <div class="flex items-center gap-2">
+              <Calendar className="w-4 h-4" />
+              <time>{article.data.date}</time>
+            </div>
+            <span>·</span>
+            <div class="flex items-center gap-2">
+              <Tag className="w-4 h-4" />
+              <span>{article.data.category}</span>
+            </div>
+            {article.data.readTime && (
+              <>
+                <span>·</span>
+                <div class="flex items-center gap-2">
+                  <Clock className="w-4 h-4" />
+                  <span>{article.data.readTime}</span>
+                </div>
+              </>
+            )}
+          </div>
+
+          {/* Title */}
+          <h1 class="text-4xl sm:text-5xl lg:text-6xl tracking-tight leading-[1.1]">
+            {article.data.title}
+          </h1>
+
+          {/* Excerpt */}
+          <p class="text-xl text-muted-foreground leading-relaxed">
+            {article.data.excerpt}
+          </p>
+
+          {/* Divider */}
+          <div class="h-px bg-border"></div>
+        </header>
+
+        {/* Cover Image */}
+        {article.data.coverImage && (
+          <div class="mb-12 aspect-video overflow-hidden border border-border">
+            <img 
+              src={article.data.coverImage.src} 
+              alt={article.data.title}
+              class="w-full h-full object-cover"
+            />
+          </div>
+        )}
+
+        {/* Markdown Content */}
+        <div class="blog-content prose prose-lg max-w-none">
+          <Content />
+        </div>
+
+        {/* Tags */}
+        {article.data.tags && article.data.tags.length > 0 && (
+          <div class="mt-12 pt-12 border-t border-border">
+            <div class="flex items-center gap-3 flex-wrap">
+              <span class="text-xs uppercase tracking-widest text-muted-foreground">
+                Tags:
+              </span>
+              {article.data.tags.map((tag) => (
+                <span class="px-3 py-1 text-xs border border-border hover:border-foreground transition-colors">
+                  {tag}
+                </span>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* Related Posts */}
+        {relatedArticles.length > 0 && (
+          <div class="mt-16 pt-16 border-t border-border">
+            <h2 class="text-2xl tracking-tight mb-8">관련 글</h2>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+              {relatedArticles.map((relatedArticle) => (
+                <a 
+                  href={`/articles/${relatedArticle.id}`}
+                  class="group border border-border hover:border-foreground transition-colors p-6"
+                >
+                  <div class="space-y-3">
+                    <div class="flex items-center gap-2 text-xs text-muted-foreground">
+                      <Tag className="w-3 h-3" />
+                      <span>{relatedArticle.data.category}</span>
+                    </div>
+                    <h3 class="text-lg line-clamp-2 group-hover:text-muted-foreground transition-colors">
+                      {relatedArticle.data.title}
+                    </h3>
+                    <p class="text-sm text-muted-foreground line-clamp-2">
+                      {relatedArticle.data.excerpt}
+                    </p>
+                  </div>
+                </a>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* Giscus Comments */}
+        <GiscusContainer client:only="react" />
+      </div>
+
+      {/* Table of Contents (Desktop) */}
+      <aside class="hidden xl:block col-span-3">
+        <div class="sticky top-24">
+          <TableOfContents client:media="(min-width: 1280px)" headings={headings} />
+        </div>
+      </aside>
+    </div>
+  </article>
+</DefaultLayout>

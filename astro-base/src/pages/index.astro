@@ -1,63 +1,164 @@
 ---
-import BaseHead from '../components/BaseHead.astro';
-import Footer from '../components/Footer.astro';
-import Header from '../components/Header.astro';
+import '../styles/global.css';
+import { ArrowRight } from 'lucide-react';
+
+import { BlogCard } from '@/components/react/BlogCard';
+import DefaultLayout from '@/layouts/Default.astro';
 import { SITE_DESCRIPTION, SITE_TITLE } from '../consts';
+import { getCollection } from 'astro:content';
+
+// 모든 blog article 을 가져옵니다.
+const articles = await getCollection('articles');
+
+// 최근 articles
+const recentArticles = articles.sort((first, second) => {
+  const firstDate = new Date(first.data.date.replace(/\./g, '-'));
+  const secondDate = new Date(second.data.date.replace(/\./g, '-'));
+  return secondDate.getTime() - firstDate.getTime();
+}).slice(0, 6);
+
+
+// featured articles
+const featuredArticle = articles.find((article) => article.data.featured);
+
 ---
 
 <!doctype html>
-<html lang="en">
-  <head>
-    <BaseHead title={SITE_TITLE} description={SITE_DESCRIPTION} />
-  </head>
-  <body>
-    <Header />
-    <main>
-      <h1>🧑‍🚀 Hello, Astronaut!</h1>
-      <p>
-        Welcome to the official <a href="https://astro.build/">Astro</a> blog starter
-        template. This template serves as a lightweight, minimally-styled starting
-        point for anyone looking to build a personal website, blog, or portfolio
-        with Astro.
-      </p>
-      <p>
-        This template comes with a few integrations already configured in your
-        <code>astro.config.mjs</code> file. You can customize your setup with
-        <a href="https://astro.build/integrations">Astro Integrations</a> to add
-        tools like Tailwind, React, or Vue to your project.
-      </p>
-      <p>Here are a few ideas on how to get started with the template:</p>
-      <ul>
-        <li>Edit this page in <code>src/pages/index.astro</code></li>
-        <li>
-          Edit the site header items in <code>src/components/Header.astro</code>
-        </li>
-        <li>
-          Add your name to the footer in <code>src/components/Footer.astro</code
+<DefaultLayout title={SITE_TITLE} description={SITE_DESCRIPTION}>
+  <section class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 sm:py-16 md:py-20 lg:py-32">
+    <div class="grid grid-cols-12 gap-6">
+      <div class="col-span-12 md:col-span-7 lg:col-span-8 space-y-8">
+        <div class="space-y-6">
+          <div class="flex items-center gap-4">
+            <div class="w-12 h-px bg-foreground"></div>
+            <span class="text-xs uppercase tracking-widest text-muted-foreground">
+              Featured Article
+            </span>
+          </div>
+          
+          <h1 class="text-4xl md:text-5xl lg:text-6xl xl:text-7xl tracking-tight leading-[1.1]">
+            개발과 디자인<br />이야기
+          </h1>
+        </div>
+
+        <p class="text-lg md:text-xl text-muted-foreground max-w-2xl leading-relaxed">
+          경험과 배움을 기록하고 공유합니다
+        </p>
+
+        <div class="flex items-center gap-4">
+          <a 
+            href="/articles" 
+            class="inline-flex items-center gap-2 px-6 py-3 bg-foreground text-background hover:bg-foreground/90 transition-colors border border-foreground"
           >
-        </li>
-        <li>
-          Check out the included blog posts in <code>src/content/blog/</code>
-        </li>
-        <li>
-          Customize the blog post page layout in <code
-            >src/layouts/BlogPost.astro</code
-          >
-        </li>
-      </ul>
-      <p>
-        Have fun! If you get stuck, remember to
-        <a href="https://docs.astro.build/">read the docs</a>
-        or <a href="https://astro.build/chat">join us on Discord</a> to ask questions.
-      </p>
-      <p>
-        Looking for a blog template with a bit more personality? Check out
-        <a href="https://github.com/Charca/astro-blog-template"
-          >astro-blog-template</a
-        >
-        by <a href="https://twitter.com/Charca">Maxi Ferreira</a>.
-      </p>
-    </main>
-    <Footer />
-  </body>
-</html>
+            <span class="text-sm uppercase tracking-wide">모든 글 보기</span>
+            <ArrowRight className="w-4 h-4" />
+          </a>
+        </div>
+      </div>
+
+      <div class="col-span-12 md:col-span-5 lg:col-span-4 flex items-end">
+        <div class="w-full border-l border-border pl-6 space-y-4">
+          <p class="text-sm text-muted-foreground leading-relaxed">
+            새로운 기술과 방법론을 탐구하고, 프로젝트에서 얻은 인사이트를 공유합니다.
+          </p>
+          <div class="flex items-center gap-2 text-sm text-muted-foreground">
+            <span>{articles.length}개의 글</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+    {/* Featured Post (if exists) */}
+    {featuredArticle && (
+      <section class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 border-y border-border">
+        <div class="flex items-center gap-4 mb-8">
+          <div class="w-12 h-px bg-foreground"></div>
+          <h2 class="text-xs uppercase tracking-widest text-muted-foreground">
+            Featured
+          </h2>
+        </div>
+  
+        <a href={`/articles/${featuredArticle.id}`} class="block">
+          <BlogCard
+            client:visible
+            post={{
+              id: featuredArticle.id,
+              title: featuredArticle.data.title,
+              excerpt: featuredArticle.data.excerpt,
+              coverImage: featuredArticle.data.coverImage,
+              date: featuredArticle.data.date,
+              category: featuredArticle.data.category,
+              readTime: featuredArticle.data.readTime,
+              featured: featuredArticle.data.featured,
+            }}
+            href={`/articles/${featuredArticle.id}`}
+          />
+        </a>
+      </section>
+    )}
+
+      {/* Recent Posts */}
+  <section class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 sm:py-16 md:py-20">
+    <div class="flex items-center justify-between mb-8">
+      <div class="flex items-center gap-4">
+        <div class="w-12 h-px bg-foreground"></div>
+        <h2 class="text-3xl tracking-tight">최근 글</h2>
+      </div>
+      <a 
+        href="/articles" 
+        class="text-sm hover:text-foreground transition-colors flex items-center gap-2 text-muted-foreground"
+      >
+        <span>View All</span>
+        <ArrowRight className="w-4 h-4" />
+      </a>
+    </div>
+
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+      {recentArticles.map((article, index) => (
+        <a href={`/articles/${article.id}`}>
+          <BlogCard
+            client:visible
+            index={index}
+            post={{
+              id: article.id,
+              title: article.data.title,
+              excerpt: article.data.excerpt,
+              coverImage: article.data.coverImage,
+              date: article.data.date,
+              category: article.data.category,
+              readTime: article.data.readTime,
+              featured: article.data.featured,
+            }}
+            href={`/articles/${article.id}`}
+          />
+        </a>
+      ))}
+    </div>
+  </section>
+
+    {/* Categories Section */}
+    <section class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 sm:py-16 border-t border-border">
+      <div class="flex items-center gap-4 mb-8">
+        <div class="w-12 h-px bg-foreground"></div>
+        <h2 class="text-3xl tracking-tight">카테고리</h2>
+      </div>
+  
+      <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+        {[...new Set(articles.map(article => article.data.category))].map((category) => {
+          const count = articles.filter(article => article.data.category === category).length;
+          return (
+            <a
+              href={`/articles?category=${category}`}
+              class="p-6 border border-border hover:border-foreground transition-colors"
+            >
+              <div class="space-y-2">
+                <h3 class="text-lg tracking-tight">{category}</h3>
+                <p class="text-sm text-muted-foreground">{count}개의 글</p>
+              </div>
+            </a>
+          );
+        })}
+      </div>
+    </section>
+</DefaultLayout>

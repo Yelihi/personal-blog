@@ -1,0 +1,114 @@
+---
+title: 'React 19와 함께하는 모던 웹 개발'
+excerpt: '새롭게 출시된 React 19의 주요 기능과 변경사항을 살펴보고, 실제 프로젝트에 어떻게 적용할 수 있는지 알아봅니다.'
+date: '2025.10.15'
+category: 'React'
+coverImage: './images/blog-placeholder-1.jpg'
+# coverImage: "https://images.unsplash.com/photo-1558181445-eca4774b2a37?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxtb2Rlcm4lMjB3b3Jrc3BhY2UlMjBtaW5pbWFsfGVufDF8fHx8MTc2MDk3NTAzOXww&ixlib=rb-4.1.0&q=80&w=1080"
+featured: true
+readTime: '5 min read'
+tags: ['React', 'JavaScript', 'Web Development']
+---
+
+# React 19와 함께하는 모던 웹 개발
+
+React 19가 드디어 출시되었습니다. 이번 버전에서는 개발자 경험을 개선하고 성능을 향상시키는 다양한 기능들이 추가되었습니다.
+
+## 주요 기능
+
+### 1. Server Components
+
+React Server Components는 서버에서 렌더링되는 컴포넌트로, 클라이언트로 전송되는 JavaScript 양을 크게 줄일 수 있습니다.
+
+```typescript
+// 서버 컴포넌트 예시
+async function ServerComponent() {
+  const data = await fetch('https://api.example.com/data');
+  const json = await data.json();
+
+  return (
+    <div>
+      <h1>{json.title}</h1>
+      <p>{json.description}</p>
+    </div>
+  );
+}
+```
+
+### 2. Actions
+
+Actions는 데이터 변경을 처리하는 새로운 방법입니다. 폼 제출이나 버튼 클릭과 같은 사용자 상호작용을 더 쉽게 처리할 수 있습니다.
+
+```typescript
+function Form() {
+  async function handleSubmit(formData: FormData) {
+    'use server';
+
+    const name = formData.get('name');
+    await saveToDatabase(name);
+  }
+
+  return (
+    <form action={handleSubmit}>
+      <input name="name" />
+      <button type="submit">Submit</button>
+    </form>
+  );
+}
+```
+
+### 3. 개선된 Hooks
+
+새로운 `use` Hook이 추가되어 비동기 데이터를 더 쉽게 처리할 수 있습니다.
+
+```typescript
+function Component() {
+  const data = use(fetchData());
+
+  return <div>{data.title}</div>;
+}
+```
+
+## 성능 개선
+
+React 19는 다음과 같은 성능 개선 사항을 포함합니다:
+
+- **자동 배칭**: 더 많은 업데이트를 자동으로 배칭하여 리렌더링 횟수 감소
+- **Suspense 개선**: 더 나은 로딩 상태 관리
+- **메모리 사용 최적화**: 더 효율적인 메모리 관리
+
+## 마이그레이션 가이드
+
+### 1. 패키지 업데이트
+
+```bash
+npm install react@19 react-dom@19
+```
+
+### 2. 타입 정의 업데이트
+
+```bash
+npm install @types/react@19 @types/react-dom@19
+```
+
+### 3. 코드 변경
+
+대부분의 기존 코드는 그대로 작동하지만, 일부 deprecated API는 제거되었습니다.
+
+## 결론
+
+React 19는 웹 개발의 미래를 위한 중요한 발걸음입니다. Server Components와 Actions를 통해 더 나은 사용자 경험과 개발자 경험을 제공합니다.
+
+다음 프로젝트에서 React 19를 사용해보세요!
+
+---
+
+**관련 글:**
+
+- [TypeScript 5.0 완벽 가이드](/articles/typescript-5-guide)
+- [Next.js 14 App Router 마이그레이션](/articles/nextjs-14-migration)
+
+**참고 자료:**
+
+- [React 19 공식 문서](https://react.dev)
+- [React Blog](https://react.dev/blog)

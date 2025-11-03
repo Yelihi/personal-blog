@@ -1,0 +1,79 @@
+@import '../../styles/global.css';
+
+/* Markdown Content Styles */
+.blog-content {
+  @apply text-foreground;
+}
+
+.blog-content h1,
+.blog-content h2,
+.blog-content h3,
+.blog-content h4 {
+  @apply tracking-tight scroll-mt-24;
+}
+
+.blog-content h2 {
+  @apply text-3xl mt-12 mb-6;
+}
+
+.blog-content h3 {
+  @apply text-2xl mt-10 mb-4;
+}
+
+.blog-content h4 {
+  @apply text-xl mt-8 mb-3;
+}
+
+.blog-content p {
+  @apply mb-6 leading-relaxed;
+}
+
+.blog-content a {
+  @apply text-foreground underline underline-offset-2 hover:text-muted-foreground transition-colors;
+}
+
+.blog-content code {
+  @apply bg-secondary px-1.5 py-0.5 rounded-sm text-sm font-mono;
+}
+
+.blog-content pre {
+  @apply bg-card border border-border rounded-sm p-4 overflow-x-auto my-6;
+}
+
+.blog-content pre code {
+  @apply bg-transparent p-0;
+}
+
+.blog-content ul,
+.blog-content ol {
+  @apply mb-6 pl-6 space-y-2;
+}
+
+.blog-content li {
+  @apply leading-relaxed;
+}
+
+.blog-content blockquote {
+  @apply my-6 pl-4 border-l-4 border-border italic text-muted-foreground;
+}
+
+.blog-content img {
+  @apply my-8 border border-border;
+}
+
+.blog-content table {
+  @apply w-full my-6 border-collapse;
+}
+
+.blog-content th,
+.blog-content td {
+  @apply border border-border px-4 py-2;
+}
+
+.blog-content th {
+  @apply bg-muted;
+}
+
+.blog-content hr {
+  @apply my-8 border-border;
+}

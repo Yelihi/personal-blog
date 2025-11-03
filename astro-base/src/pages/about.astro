@@ -1,72 +1,272 @@
 ---
-import Layout from '../layouts/BlogPost.astro';
+import '../styles/global.css';
+import { Github, Twitter, Mail } from 'lucide-react';
+import { ExperienceSection } from '@/components/react/ExperienceSection';
+
+import DefaultLayout from '@/layouts/Default.astro';
+
+const interviews = [
+  {
+    question: "지금 가장 많이 생각하는 것은?",
+    answer: "디자인과 개발 사이의 경계가 점점 흐려지는 게 흥미롭습니다. 단순히 기능을 구현하는 것을 넘어, 사용자가 '아, 이거 좋은데?'라고 느끼는 순간을 만드는 것. 그 순간을 어떻게 코드로 표현할 수 있을까 고민합니다."
+  },
+  {
+    question: "어디서 일하고 싶나요?",
+    answer: "물리적 공간보다는 '어떤 사람들과'가 더 중요한 것 같아요. 서로의 코드를 리뷰하면서 배우고, 좋은 디자인에 대해 토론하고, 실패를 두려워하지 않는 팀이면 좋겠습니다. 창밖에 나무가 보이면 더 좋고요."
+  },
+  {
+    question: "좋아하는 순간은?",
+    answer: "새벽 2시, 며칠 동안 해결하지 못했던 버그를 고쳤을 때의 그 희열. 또는 아무 생각 없이 산책하다가 문득 아이디어가 떠오르는 순간. 그리고 배포 후 사용자가 '이거 너무 편해졌어요'라고 피드백을 남겼을 때."
+  },
+  {
+    question: "요즘 관심 있는 것?",
+    answer: "단순함의 힘. 복잡한 걸 복잡하게 만드는 건 쉽지만, 복잡한 걸 단순하게 만드는 건 정말 어렵더라고요. 코드도, 디자인도, 삶도 마찬가지인 것 같습니다."
+  },
+  {
+    question: "영감은 어디서?",
+    answer: "예상 밖의 곳에서 옵니다. 잘 디자인된 카페 메뉴판, 오래된 책의 레이아웃, 건축물의 선, 자연의 패턴. 좋은 경험은 어디에나 있고, 그걸 코드로 번역하는 게 제 일인 것 같아요."
+  },
+  {
+    question: "10년 후엔?",
+    answer: "여전히 코드를 작성하고 있길 바랍니다. 다만 지금보다 더 본질에 집중하고, 더 단순하게 생각하고, 더 많은 사람들에게 영감을 줄 수 있는 사람이 되었으면 합니다."
+  }
+];
+
+const experiences = [
+  {
+    period: "2023.12 - 2025.09",
+    company: "수학에 심장을 달다",
+    role: "프론트엔드 개발자",
+    description: "AI 기반 중등 수학 통합 관리형 어플리케이션을 서비스하는 회사",
+    projects: [
+      {
+        id: "red-backoffice",
+        title: "학원 관리자 서비스 (RED Backoffice)",
+        period: "2024.06 ~ 2025.09",
+        tech: "Vue3, Vite, Pinia, TanStack Query/Form, TailwindCSS, tsyringe, Zod, Storybook, Axios, Claude CLI",
+        achievements: [
+          "디자인 시스템 구축으로 컴포넌트 재사용률 60% 증가, 신규 페이지 개발 속도 40% 단축",
+          "DDD 구조 적용 및 FSD로 리팩토링하여 Layer 간 책임 분리 및 테스트 코드 작성 단순화",
+          "Claude CLI 기반 테스트 자동화로 테스트 커버리지 35% 증가",
+          "PopupManager 모듈화로 팝업 UI 재사용률 50% 향상",
+          "복습 챌린지 렌더링 최적화로 400ms → 100ms 이하 단축 (1000개 문항 안정화)",
+          "Fractional Indexing + 낙관적 업데이트로 커리큘럼 순서 변경 UX 개선",
+          "GSAP 기반 계단식 렌더링 + 가상 스크롤로 1만 개 리스트 실시간 모니터링 안정화"
+        ]
+      },
+      {
+        id: "red-blue-integration",
+        title: "통합계정 서비스 (RED-BLUE 통합폼)",
+        period: "2024.01 ~ 2024.03",
+        tech: "Vue3, Vite, TypeScript, TailwindCSS, TanStack Form, Zod, Pinia, Axios",
+        achievements: [
+          "Zod Schema + TanStack Form으로 실시간 Validation 구조 구축, 입력 오류 30% 감소",
+          "Web History API 활용 Dummy Route로 뒤로가기 시 데이터 손실 방지"
+        ]
+      },
+      {
+        id: "free-trial-system",
+        title: "무료체험학생 내부 관리 시스템",
+        period: "2025.04 ~ 2025.06",
+        tech: "React, TypeScript, TailwindCSS, Zod, Ky, TanStack Form, Zustand, Framer Motion, Sentry",
+        achievements: [
+          "4단계 입력 구조 설계 + Motion 애니메이션으로 등록률 5% → 16% 향상",
+          "Meta Pixel 분석 후 3단계로 축소하여 등록 완료율 추가 10%p 향상",
+          "Zod 스키마 공유로 서버-클라이언트 간 검증 일관성 확보"
+        ]
+      },
+      {
+        id: "seat-dashboard",
+        title: "학생 좌석 실시간 관리 대시보드",
+        period: "2024.01 ~ 2024.02",
+        tech: "Vue3, Vite, TypeScript, SCSS, Axios, Pinia",
+        achievements: [
+          "nextToken 기반 데이터 병합 로직으로 무한 스크롤 + 실시간 갱신 충돌 해결",
+          "네트워크 불안정 시 오프라인 블러 처리 + 연결 상태 표시로 UX 개선"
+        ]
+      },
+      {
+        id: "landing-page",
+        title: "1차 수심달 랜딩페이지",
+        period: "2025.04 ~ 2025.05",
+        tech: "Nuxt, TypeScript, TailwindCSS, Pinia, Docker",
+        achievements: [
+          "Nuxt SSR 구성으로 SEO 최적화 및 초기 로딩 성능 개선",
+          "Docker 환경으로 개발 일관성 확보 및 배포 자동화"
+        ]
+      }
+    ]
+  }
+];
+
+// const skills = [
+//   {
+//     category: "Frontend",
+//     items: ["React", "Vue", "TypeScript", "Tailwind CSS", "Astro"]
+//   },
+//   {
+//     category: "Tools",
+//     items: ["Git", "Vite", "Docker", "Figma", "Storybook"]
+//   },
+//   {
+//     category: "Interests",
+//     items: ["Design Systems", "Performance", "DX", "Animation"]
+//   }
+// ];
+
+const socialLinks = [
+  { icon: Github, href: "#", label: "GitHub" },
+  { icon: Twitter, href: "#", label: "Twitter" },
+  { icon: Mail, href: "mailto:your@email.com", label: "Email" }
+];
+
+const profileImage = "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=800&h=1000&fit=crop";
 ---
 
-<Layout
-  title="About Me"
-  description="Lorem ipsum dolor sit amet"
-  pubDate={new Date('August 08 2021')}
-  heroImage={'/assets/blog-placeholder-about.jpg'}
->
-  <p>
-    Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod
-    tempor incididunt ut labore et dolore magna aliqua. Vitae ultricies leo
-    integer malesuada nunc vel risus commodo viverra. Adipiscing enim eu turpis
-    egestas pretium. Euismod elementum nisi quis eleifend quam adipiscing. In
-    hac habitasse platea dictumst vestibulum. Sagittis purus sit amet volutpat.
-    Netus et malesuada fames ac turpis egestas. Eget magna fermentum iaculis eu
-    non diam phasellus vestibulum lorem. Varius sit amet mattis vulputate enim.
-    Habitasse platea dictumst quisque sagittis. Integer quis auctor elit sed
-    vulputate mi. Dictumst quisque sagittis purus sit amet.
-  </p>
+<DefaultLayout title="About Me" description="about me">
+  <div class="min-h-screen pb-20">
+    {/* Hero - Magazine Style */}
+    <section class="border-b border-border">
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 sm:py-16 md:py-24 lg:py-32">
+        <div class="grid grid-cols-12 gap-12">
+          {/* Left - Large Title */}
+          <div class="col-span-12 lg:col-span-7 space-y-12">
+            <div class="space-y-6 sm:space-y-8">
+              <h1 class="text-5xl sm:text-6xl md:text-7xl lg:text-8xl tracking-tighter leading-[0.9]">
+                Making<br />
+                Things<br />
+                Simple
+              </h1>
+            </div>
 
-  <p>
-    Morbi tristique senectus et netus. Id semper risus in hendrerit gravida
-    rutrum quisque non tellus. Habitasse platea dictumst quisque sagittis purus
-    sit amet. Tellus molestie nunc non blandit massa. Cursus vitae congue mauris
-    rhoncus. Accumsan tortor posuere ac ut. Fringilla urna porttitor rhoncus
-    dolor. Elit ullamcorper dignissim cras tincidunt lobortis. In cursus turpis
-    massa tincidunt dui ut ornare lectus. Integer feugiat scelerisque varius
-    morbi enim nunc. Bibendum neque egestas congue quisque egestas diam. Cras
-    ornare arcu dui vivamus arcu felis bibendum. Dignissim suspendisse in est
-    ante in nibh mauris. Sed tempus urna et pharetra pharetra massa massa
-    ultricies mi.
-  </p>
+            <div class="border-l-2 border-foreground pl-4 sm:pl-6 md:pl-8 space-y-3 sm:space-y-4">
+              <p class="text-lg sm:text-xl md:text-2xl leading-relaxed">
+                코드와 디자인 사이에서<br />
+                단순함을 찾는 개발자
+              </p>
+              <p class="text-xs sm:text-sm text-muted-foreground uppercase tracking-wide">
+                Frontend Developer — Seoul, Korea
+              </p>
+            </div>
+          </div>
 
-  <p>
-    Mollis nunc sed id semper risus in. Convallis a cras semper auctor neque.
-    Diam sit amet nisl suscipit. Lacus viverra vitae congue eu consequat ac
-    felis donec. Egestas integer eget aliquet nibh praesent tristique magna sit
-    amet. Eget magna fermentum iaculis eu non diam. In vitae turpis massa sed
-    elementum. Tristique et egestas quis ipsum suspendisse ultrices. Eget lorem
-    dolor sed viverra ipsum. Vel turpis nunc eget lorem dolor sed viverra.
-    Posuere ac ut consequat semper viverra nam. Laoreet suspendisse interdum
-    consectetur libero id faucibus. Diam phasellus vestibulum lorem sed risus
-    ultricies tristique. Rhoncus dolor purus non enim praesent elementum
-    facilisis. Ultrices tincidunt arcu non sodales neque. Tempus egestas sed sed
-    risus pretium quam vulputate. Viverra suspendisse potenti nullam ac tortor
-    vitae purus faucibus ornare. Fringilla urna porttitor rhoncus dolor purus
-    non. Amet dictum sit amet justo donec enim.
-  </p>
+          {/* Right - Profile Image */}
+          <div class="col-span-12 lg:col-span-5">
+            {/* Full width on all screens, natural aspect ratio */}
+            {/* Max height only on desktop to prevent too tall images */}
+            <div class="w-full lg:max-h-[650px] overflow-hidden bg-muted border border-border">
+              <img
+                src={profileImage}
+                alt="프로필 사진"
+                class="w-full h-auto object-contain"
+              />
+            </div>
+            
+            {/* Social Links */}
+            <div class="flex items-center gap-3 mt-6 justify-center lg:justify-start">
+              {socialLinks.map((social) => (
+                <a
+                  href={social.href}
+                  class="p-3 border border-border hover:border-foreground hover:-translate-y-0.5 transition-all"
+                  aria-label={social.label}
+                >
+                  <social.icon className="w-4 h-4" />
+                </a>
+              ))}
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
 
-  <p>
-    Mattis ullamcorper velit sed ullamcorper morbi tincidunt. Tortor posuere ac
-    ut consequat semper viverra. Tellus mauris a diam maecenas sed enim ut sem
-    viverra. Venenatis urna cursus eget nunc scelerisque viverra mauris in. Arcu
-    ac tortor dignissim convallis aenean et tortor at. Curabitur gravida arcu ac
-    tortor dignissim convallis aenean et tortor. Egestas tellus rutrum tellus
-    pellentesque eu. Fusce ut placerat orci nulla pellentesque dignissim enim
-    sit amet. Ut enim blandit volutpat maecenas volutpat blandit aliquam etiam.
-    Id donec ultrices tincidunt arcu. Id cursus metus aliquam eleifend mi.
-  </p>
+    {/* Introduction */}
+    <section class="border-b border-border">
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 sm:py-16 md:py-20 lg:py-24">
+        <div class="max-w-4xl space-y-8">
+          <div class="flex items-center gap-3 sm:gap-4">
+            <div class="w-12 sm:w-16 h-px bg-foreground"></div>
+            <h2 class="text-xl sm:text-2xl md:text-3xl tracking-tight">소개</h2>
+          </div>
+          
+          <div class="border-l-2 border-foreground pl-4 sm:pl-6 md:pl-8 space-y-4 sm:space-y-6">
+            <p class="text-lg sm:text-xl md:text-2xl leading-relaxed">
+              저는 사용자 경험의 디테일에 집착하는 프론트엔드 개발자입니다.
+            </p>
+            <p class="text-sm sm:text-base md:text-lg text-muted-foreground leading-relaxed">
+              코드를 작성할 때는 6개월 후의 제가 읽을 것이라 생각하며 작성합니다. 
+              디자인할 때는 처음 사용하는 사람의 입장에서 생각합니다. 
+              최적화할 때는 100ms의 차이가 사용자에게 어떤 의미인지 고민합니다.
+            </p>
+            <p class="text-sm sm:text-base md:text-lg text-muted-foreground leading-relaxed">
+              복잡한 시스템을 단순하게 만들고, 좋은 개발 경험이 좋은 사용자 경험으로 이어진다고 믿습니다. 
+              테스트 코드를 사랑하고, 타입 안정성을 신뢰하며, 작은 컴포넌트의 합성으로 큰 가치를 만드는 것에 흥미를 느낍니다.
+            </p>
+          </div>
+        </div>
+      </div>
+    </section>
 
-  <p>
-    Tempus quam pellentesque nec nam aliquam sem. Risus at ultrices mi tempus
-    imperdiet. Id porta nibh venenatis cras sed felis eget velit. Ipsum a arcu
-    cursus vitae. Facilisis magna etiam tempor orci eu lobortis elementum.
-    Tincidunt dui ut ornare lectus sit. Quisque non tellus orci ac. Blandit
-    libero volutpat sed cras. Nec tincidunt praesent semper feugiat nibh sed
-    pulvinar proin gravida. Egestas integer eget aliquet nibh praesent tristique
-    magna.
-  </p>
-</Layout>
+    {/* Interview Q&A */}
+    <section class="border-b border-border">
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 sm:py-16 md:py-20 lg:py-24">
+        <div class="space-y-16">
+          <div class="flex items-center gap-3 sm:gap-4">
+            <div class="w-12 sm:w-16 h-px bg-foreground"></div>
+            <h2 class="text-xl sm:text-2xl md:text-3xl tracking-tight">고민</h2>
+          </div>
+
+          <div class="grid grid-cols-1 lg:grid-cols-2 gap-x-8 sm:gap-x-12 gap-y-10 sm:gap-y-12 lg:gap-y-16">
+            {interviews.map((item, index) => (
+              <div class="space-y-3 sm:space-y-4">
+                <div class="flex items-start gap-3 sm:gap-4">
+                  <span class="text-xs text-muted-foreground mt-1 flex-shrink-0">
+                    Q{String(index + 1).padStart(2, '0')}
+                  </span>
+                  <p class="text-base sm:text-lg">{item.question}</p>
+                </div>
+                <div class="border-l border-border pl-4 sm:pl-6 md:pl-8 ml-4 sm:ml-6">
+                  <p class="text-sm sm:text-base text-muted-foreground leading-relaxed">
+                    {item.answer}
+                  </p>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+    </section>
+
+    {/* Experience */}
+    <section>
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 sm:py-16 md:py-20 lg:py-24">
+        <div class="space-y-16">
+          <div class="flex items-center gap-3 sm:gap-4">
+            <div class="w-12 sm:w-16 h-px bg-foreground"></div>
+            <h2 class="text-xl sm:text-2xl md:text-3xl tracking-tight">경험</h2>
+          </div>
+
+          <ExperienceSection client:load experiences={experiences} />
+        </div>
+      </div>
+    </section>
+
+    {/* Closing Quote */}
+    <section class="border-t border-border">
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 sm:py-16 md:py-20 lg:py-24">
+        <div class="max-w-3xl mx-auto text-center space-y-8">
+          <p class="text-xl sm:text-2xl md:text-3xl tracking-tight leading-relaxed px-4">
+            좋은 코드는 읽는 사람을 배려하고,<br class="hidden sm:inline" />
+            <span class="sm:hidden"> </span>좋은 디자인은 사용하는 사람을 존중합니다.
+          </p>
+          <div class="flex items-center justify-center gap-2">
+            <div class="w-8 sm:w-12 h-px bg-foreground"></div>
+            <span class="text-xs uppercase tracking-widest text-muted-foreground">
+              Let's Build Together
+            </span>
+            <div class="w-8 sm:w-12 h-px bg-foreground"></div>
+          </div>
+        </div>
+      </div>
+    </section>
+  </div>
+</DefaultLayout>
