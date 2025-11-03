@@ -1,6 +1,8 @@
 ---
 import '../../styles/global.css';
 import '@/pages/articles/markdown.css';
+
+import { transferImagesFormat } from '@/composables/transferImagesFormat';
 import { Tag, Calendar, Clock, ArrowLeft } from 'lucide-react';
 import DefaultLayout from '@/layouts/Default.astro';
 import { TableOfContents } from '@/components/react/TableOfContents';
@@ -11,7 +13,8 @@ import { type CollectionEntry, getCollection, render } from 'astro:content';
 
 export async function getStaticPaths() {
   const articles = await getCollection('articles');
-  return articles.map((article) => ({
+  const transferedImagesFormatArticles = await transferImagesFormat(articles, 'webp');
+  return transferedImagesFormatArticles.map((article) => ({
     params: { slug: article.id },
     props: article,
   }));
@@ -23,7 +26,8 @@ const { Content, headings } = await render(article);
 
 // 관련 글 카테고리
 const allArticles = await getCollection('articles');
-const relatedArticles = allArticles.filter(a => a.id !== article.id && a.data.category === article.data.category);
+const transferedImagesFormatAllArticles = await transferImagesFormat(allArticles, 'webp');
+const relatedArticles = transferedImagesFormatAllArticles.filter(a => a.id !== article.id && a.data.category === article.data.category);
 
 ---
 

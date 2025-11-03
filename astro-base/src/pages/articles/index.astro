@@ -1,28 +1,19 @@
 ---
 import '../../styles/global.css';
 import { getCollection } from 'astro:content';
-import { getImage } from 'astro:assets';
+
+import { transferImagesFormat } from '@/composables/transferImagesFormat';
 import ArticlesContainer from '@/components/react/ArticlesContainer';
-import { SITE_DESCRIPTION, SITE_TITLE } from '../../consts';
+import { SITE_DESCRIPTION, SITE_TITLE } from '@/consts';
 import DefaultLayout from '@/layouts/Default.astro';
-import type { InferEntrySchema } from 'astro:content';
+
 
 // 모든 blog article 을 가져옵니다.
 const articles = await getCollection('articles');
-const convertedImagesFormatArticles = await Promise.all(articles.map(async (article) => {
-  if (article.data.coverImage) {
-    const image = await getImage({ src: article.data.coverImage, format: 'webp' });
-    return {
-      ...article,
-      data: { ...article.data, coverImage: { src: image.src, width: image.rawOptions.width, height: image.rawOptions.height, format: image.rawOptions.format } } as InferEntrySchema<"articles">,
-    };
-  } else {
-    return article;
-  }
-}));
+const transferedImagesFormatArticles = await transferImagesFormat(articles, 'webp');
 
 // 최근 articles
-const recentArticles = convertedImagesFormatArticles.sort((first, second) => {
+const recentArticles = transferedImagesFormatArticles.sort((first, second) => {
   const firstDate = new Date(first.data.date.replace(/\./g, '-'));
   const secondDate = new Date(second.data.date.replace(/\./g, '-'));
   return secondDate.getTime() - firstDate.getTime();

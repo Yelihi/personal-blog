@@ -1,17 +1,20 @@
 ---
 import '../styles/global.css';
 import { ArrowRight } from 'lucide-react';
+import { getCollection } from 'astro:content';
 
+import { transferImagesFormat } from '@/composables/transferImagesFormat';
 import { BlogCard } from '@/components/react/BlogCard';
 import DefaultLayout from '@/layouts/Default.astro';
-import { SITE_DESCRIPTION, SITE_TITLE } from '../consts';
-import { getCollection } from 'astro:content';
+import { SITE_DESCRIPTION, SITE_TITLE } from '@/consts';
+
 
 // 모든 blog article 을 가져옵니다.
 const articles = await getCollection('articles');
+const transferedImagesFormatArticles = await transferImagesFormat(articles, 'webp');
 
 // 최근 articles
-const recentArticles = articles.sort((first, second) => {
+const recentArticles = transferedImagesFormatArticles.sort((first, second) => {
   const firstDate = new Date(first.data.date.replace(/\./g, '-'));
   const secondDate = new Date(second.data.date.replace(/\./g, '-'));
   return secondDate.getTime() - firstDate.getTime();
@@ -19,7 +22,7 @@ const recentArticles = articles.sort((first, second) => {
 
 
 // featured articles
-const featuredArticle = articles.find((article) => article.data.featured);
+const featuredArticle = transferedImagesFormatArticles.find((article) => article.data.featured);
 
 ---
 
