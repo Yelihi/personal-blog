@@ -21,9 +21,15 @@ const currentPage = Astro.url.pathname.replace('/', '');
     <BaseHead title={title} description={description ?? "Default Description"} />
   </head>
   <body>
-    <Header currentPage={currentPage} />
+    <Header client:load currentPage={currentPage} />
     <slot />
     <FooterContainer />
+    <script>
+      const documentElement = document.documentElement;
+      const theme = localStorage.getItem('theme');
+
+      theme === 'dark' ? documentElement.classList.add('dark') : documentElement.classList.remove('dark')
+    </script>
   </body>
 
 
