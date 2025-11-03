@@ -5,7 +5,7 @@ interface Props {
 }
 
 const navItems: { id: string; label: string; href: string }[] = [
-  { id: 'home', label: 'Home', href: '/' },
+  { id: '', label: 'Home', href: '/' },
   { id: 'articles', label: 'Articles', href: '/articles' },
   { id: 'about', label: 'About', href: '/about' },
 ];
@@ -28,6 +28,7 @@ const Header = ({ currentPage }: Props) => {
           <div className="col-span-4 lg:col-span-3">
             <a
               href="/"
+              aria-label="Home"
               className="tracking-tight flex items-center gap-3 hover:translate-x-0.5 transition-transform"
             >
               <div className="w-px h-8 bg-foreground"></div>
@@ -39,7 +40,9 @@ const Header = ({ currentPage }: Props) => {
           <nav className="hidden lg:flex col-span-6 items-center justify-center gap-12">
             {navItems.map((item) => (
               <a
+                key={item.id}
                 href={item.href}
+                aria-label={item.label}
                 className={`relative text-sm tracking-wide uppercase transition-colors ${
                   currentPage === item.id
                     ? 'text-foreground'
@@ -60,7 +63,9 @@ const Header = ({ currentPage }: Props) => {
             <nav className="flex lg:hidden items-center gap-4">
               {navItems.map((item) => (
                 <a
+                  key={item.id}
                   href={item.href}
+                  aria-label={item.label}
                   className={`text-xs tracking-wide uppercase transition-colors ${
                     currentPage === item.id
                       ? 'text-foreground'
