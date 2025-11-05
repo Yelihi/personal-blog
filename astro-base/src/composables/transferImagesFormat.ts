@@ -1,6 +1,6 @@
 import { getImage } from 'astro:assets';
 import type { InferEntrySchema } from 'astro:content';
-import type { Article } from '@/components/react/ArticlesContainer';
+import type { Article } from '@/components/react/interface';
 
 /**
  * (현 article 형식에 따라) 이미지의 포맷을 webp 또는 avif 로 변환합니다.

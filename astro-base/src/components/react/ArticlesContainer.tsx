@@ -1,22 +1,10 @@
 import { useState } from 'react';
-import type { InferEntrySchema, RenderedContent } from 'astro:content';
 
-import ArticleCardSection from './ArticleCardSection';
-import CategoryFilterSection from './CategoriFilterSection';
-import ArticleContainerHeader from './ArticleContainerHeader';
+import ArticleCardSection from '@/components/react/ArticleCardSection';
+import CategoryFilterSection from '@/components/react/CategoriFilterSection';
+import ArticleContainerHeader from '@/components/react/ArticleContainerHeader';
 
-export interface Article {
-  id: string;
-  body?: string;
-  collection: 'articles';
-  data: InferEntrySchema<'articles'>;
-  rendered?: RenderedContent;
-  filePath?: string;
-}
-
-interface ArticlesContainerProps {
-  initialArticles: Article[];
-}
+import type { ArticlesContainerProps } from '@/components/react/interface';
 
 const ArticlesContainer = ({ initialArticles }: ArticlesContainerProps) => {
   const [selectedCategory, setSelectedCategory] = useState('All');

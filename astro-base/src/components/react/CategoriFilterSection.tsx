@@ -1,8 +1,4 @@
-interface CategoryFilterSectionProps {
-  categories: string[];
-  selectCategory: (category: string) => void;
-  selectedCategory: string;
-}
+import type { CategoryFilterSectionProps } from '@/components/react/interface';
 
 const CategoryFilterSection = ({
   categories,

@@ -1,7 +1,4 @@
-interface ArticleContainerHeaderProps {
-  numberOfArticles: number;
-  selectedCategory: string;
-}
+import type { ArticleContainerHeaderProps } from '@/components/react/interface';
 
 const ArticleContainerHeader = ({
   numberOfArticles,

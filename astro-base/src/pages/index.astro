@@ -4,6 +4,7 @@ import { ArrowRight } from 'lucide-react';
 import { getCollection } from 'astro:content';
 
 import { transferImagesFormat } from '@/composables/transferImagesFormat';
+import FeatureBlogIntroduceCard from '@/components/react/FeatureBlogIntroduceCard';
 import { BlogCard } from '@/components/react/BlogCard';
 import DefaultLayout from '@/layouts/Default.astro';
 import { SITE_DESCRIPTION, SITE_TITLE } from '@/consts';
@@ -75,29 +76,18 @@ const featuredArticle = transferedImagesFormatArticles.find((article) => article
     {/* Featured Post (if exists) */}
     {featuredArticle && (
       <section class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 border-y border-border">
-        <div class="flex items-center gap-4 mb-8">
-          <div class="w-12 h-px bg-foreground"></div>
-          <h2 class="text-xs uppercase tracking-widest text-muted-foreground">
-            Featured
-          </h2>
-        </div>
-  
-        <a href={`/articles/${featuredArticle.id}`} class="block">
-          <BlogCard
-            client:visible
-            post={{
-              id: featuredArticle.id,
-              title: featuredArticle.data.title,
-              excerpt: featuredArticle.data.excerpt,
-              coverImage: featuredArticle.data.coverImage,
-              date: featuredArticle.data.date,
-              category: featuredArticle.data.category,
-              readTime: featuredArticle.data.readTime,
-              featured: featuredArticle.data.featured,
-            }}
-            href={`/articles/${featuredArticle.id}`}
-          />
-        </a>
+        <FeatureBlogIntroduceCard
+          client:visible
+          featuredPost={{
+            id: featuredArticle.id,
+            title: featuredArticle.data.title,
+            excerpt: featuredArticle.data.excerpt,
+            date: featuredArticle.data.date,
+            category: featuredArticle.data.category,
+            coverImage: featuredArticle.data.coverImage,
+          }}
+          href={`/articles/${featuredArticle.id}`}
+        />
       </section>
     )}
 

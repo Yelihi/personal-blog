@@ -2,23 +2,7 @@ import { motion } from 'motion/react';
 import { Calendar, Tag, Link as LinkIcon } from 'lucide-react';
 import { useState } from 'react';
 
-export interface BlogPost {
-  id: string;
-  title: string;
-  excerpt: string;
-  date: string;
-  category: string;
-  coverImage?: ImageMetadata;
-  readTime?: string;
-  featured?: boolean;
-}
-
-export interface BlogCardProps {
-  post: BlogPost;
-  onClick?: () => void;
-  index?: number;
-  href?: string;
-}
+import type { BlogCardProps } from '@/components/react/interface';
 
 export function BlogCard({ post, onClick, index, href }: BlogCardProps) {
   const [isHovered, setIsHovered] = useState(false);

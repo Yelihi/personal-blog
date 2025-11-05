@@ -1,9 +1,5 @@
-import { BlogCard } from './BlogCard';
-import type { Article } from './ArticlesContainer';
-
-interface ArticleCardSectionProps {
-  filteredArticles: Article[];
-}
+import { BlogCard } from '@/components/react/BlogCard';
+import type { ArticleCardSectionProps } from '@/components/react/interface';
 
 const ArticleCardSection = ({ filteredArticles }: ArticleCardSectionProps) => {
   return (
