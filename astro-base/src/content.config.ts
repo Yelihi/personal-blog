@@ -3,6 +3,11 @@ import { glob } from 'astro/loaders';
 
 const articles = defineCollection({
   // Load Markdown and MDX files in the `src/content/articles/` directory.
+  // `**/*.{md,mdx}` 패턴은 모든 하위 폴더를 재귀적으로 검색합니다.
+  // 예시 구조:
+  //   - src/content/articles/react-19/index.mdx → id: "react-19/index"
+  //   - src/content/articles/typescript-5/index.mdx → id: "typescript-5/index"
+  //   - src/content/articles/example-post.mdx → id: "example-post"
   loader: glob({ base: './src/content/articles', pattern: '**/*.{md,mdx}' }),
   // Type-check frontmatter using a schema,
   schema: ({ image }) =>
