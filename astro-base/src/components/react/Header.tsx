@@ -32,7 +32,7 @@ const Header = ({ currentPage }: Props) => {
               className="tracking-tight flex items-center gap-3 hover:translate-x-0.5 transition-transform"
             >
               <div className="w-px h-8 bg-foreground"></div>
-              <span className="text-xl">Blog</span>
+              <span className="text-xl">Yelihi</span>
             </a>
           </div>
 

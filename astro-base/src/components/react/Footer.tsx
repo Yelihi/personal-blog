@@ -1,21 +1,16 @@
 import * as React from 'react';
-import { Github, Mail, Twitter } from 'lucide-react';
+import { Github, Mail } from 'lucide-react';
 
 const SOCIAL_LINKS: { icon: React.ElementType; href: string; label: string }[] =
   [
     {
       icon: Github,
-      href: '#',
+      href: 'https://github.com/Yelihi',
       label: 'GitHub',
     },
     {
-      icon: Twitter,
-      href: '#',
-      label: 'Twitter',
-    },
-    {
       icon: Mail,
-      href: '#',
+      href: 'mailto:yelihi19@gmail.com',
       label: 'Email',
     },
   ];
@@ -30,7 +25,7 @@ const Footer = () => {
           <div className="col-span-12 md:col-span-6 space-y-6">
             <div className="flex items-center gap-3">
               <div className="w-px h-8 bg-foreground"></div>
-              <span className="text-xl tracking-tight">Blog</span>
+              <span className="text-xl tracking-tight">Yelihi</span>
             </div>
             <p className="text-sm text-muted-foreground uppercase tracking-wide border-l border-border pl-4">
               © {currentYear} All rights reserved

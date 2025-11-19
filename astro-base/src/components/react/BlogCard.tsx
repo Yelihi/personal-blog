@@ -69,7 +69,7 @@ export function BlogCard({ post, onClick, index, href }: BlogCardProps) {
           {post.title}
         </h3>
 
-        <p className="text-sm text-muted-foreground line-clamp-2 leading-relaxed">
+        <p className="text-sm text-muted-foreground line-clamp-2 leading-relaxed overflow-hidden text-ellipsis max-h-[40px] min-h-[40px]">
           {post.excerpt}
         </p>
 

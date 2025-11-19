@@ -1,6 +1,7 @@
 ---
 import '../styles/global.css';
-import { Github, Twitter, Mail } from 'lucide-react';
+import { Github,  Mail } from 'lucide-react';
+// import { getImage } from 'astro:assets';
 
 import { ExperienceSection } from '@/components/react/ExperienceSection';
 
@@ -9,27 +10,27 @@ import DefaultLayout from '@/layouts/Default.astro';
 const interviews = [
   {
     question: "지금 가장 많이 생각하는 것은?",
-    answer: "디자인과 개발 사이의 경계가 점점 흐려지는 게 흥미롭습니다. 단순히 기능을 구현하는 것을 넘어, 사용자가 '아, 이거 좋은데?'라고 느끼는 순간을 만드는 것. 그 순간을 어떻게 코드로 표현할 수 있을까 고민합니다."
+    answer: "나의 아들 솔이, 그리고 지금 자신이 하고 싶어하는 일은 무엇일지 생각합니다."
   },
   {
     question: "어디서 일하고 싶나요?",
-    answer: "물리적 공간보다는 '어떤 사람들과'가 더 중요한 것 같아요. 서로의 코드를 리뷰하면서 배우고, 좋은 디자인에 대해 토론하고, 실패를 두려워하지 않는 팀이면 좋겠습니다. 창밖에 나무가 보이면 더 좋고요."
+    answer: "사실 같이 일하게 될 사람들이 가장 중요하기에, 공간은 크게 상관없지만, 가능하다면 도심지 외곽에서 일해보고 싶긴 합니다."
   },
   {
-    question: "좋아하는 순간은?",
-    answer: "새벽 2시, 며칠 동안 해결하지 못했던 버그를 고쳤을 때의 그 희열. 또는 아무 생각 없이 산책하다가 문득 아이디어가 떠오르는 순간. 그리고 배포 후 사용자가 '이거 너무 편해졌어요'라고 피드백을 남겼을 때."
+    question: "개발자로 일하면서 좋아하는 순간은?",
+    answer: "여전히 어려워하는 과제를 실제 해결하는 구현체를 생성할때가 좋지만, 특히나 사용자가 만족할만한 서비스를 개발할때가 요새 가장 좋습니다."
   },
   {
     question: "요즘 관심 있는 것?",
-    answer: "단순함의 힘. 복잡한 걸 복잡하게 만드는 건 쉽지만, 복잡한 걸 단순하게 만드는 건 정말 어렵더라고요. 코드도, 디자인도, 삶도 마찬가지인 것 같습니다."
+    answer: "디카페인 커피, 질 좋은 고기먹기, ai 기반 서비스, vision ai 와 같은 디바이스 "
   },
   {
-    question: "영감은 어디서?",
-    answer: "예상 밖의 곳에서 옵니다. 잘 디자인된 카페 메뉴판, 오래된 책의 레이아웃, 건축물의 선, 자연의 패턴. 좋은 경험은 어디에나 있고, 그걸 코드로 번역하는 게 제 일인 것 같아요."
+    question: "어떤 일을 하고 싶나요?",
+    answer: "최근 ai 를 통해 기존에 제공하기 힘든 서비스를 더 제공할 수 있게 되었으니, 이와 연관된 서비스를 만들고 싶습니다."
   },
   {
     question: "10년 후엔?",
-    answer: "여전히 코드를 작성하고 있길 바랍니다. 다만 지금보다 더 본질에 집중하고, 더 단순하게 생각하고, 더 많은 사람들에게 영감을 줄 수 있는 사람이 되었으면 합니다."
+    answer: "자신이 만든 서비스가 사용자에게 도움이 되고, 사용자가 만족할만한 서비스를 만들고 있는 개발자가 되었으면 합니다."
   }
 ];
 
@@ -42,7 +43,7 @@ const experiences = [
     projects: [
       {
         id: "red-backoffice",
-        title: "학원 관리자 서비스 (RED Backoffice)",
+        title: "학원 관리자 서비스",
         period: "2024.06 ~ 2025.09",
         tech: "Vue3, Vite, Pinia, TanStack Query/Form, TailwindCSS, tsyringe, Zod, Storybook, Axios, Claude CLI",
         achievements: [
@@ -116,12 +117,12 @@ const experiences = [
 // ];
 
 const socialLinks = [
-  { icon: Github, href: "#", label: "GitHub" },
-  { icon: Twitter, href: "#", label: "Twitter" },
-  { icon: Mail, href: "mailto:your@email.com", label: "Email" }
+  { icon: Github, href: "https://github.com/Yelihi", label: "GitHub" },
+  { icon: Mail, href: "mailto:yelihi19@gmail.com", label: "Email" }
 ];
 
-const profileImage = "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=800&h=1000&fit=crop";
+/** public 경로 내 image 를 가져옵니다. */
+// const profileImage = await getImage({ src: 'public/assets/profile.jpeg', format: 'webp' });
 ---
 
 <DefaultLayout title="About Me" description="about me">
@@ -134,16 +135,15 @@ const profileImage = "https://images.unsplash.com/photo-1507003211169-0a1dd7228f
           <div class="col-span-12 lg:col-span-7 space-y-12">
             <div class="space-y-6 sm:space-y-8">
               <h1 class="text-5xl sm:text-6xl md:text-7xl lg:text-8xl tracking-tighter leading-[0.9]">
-                Making<br />
-                Things<br />
-                Simple
+                Thinking<br />
+                Hard
               </h1>
             </div>
 
             <div class="border-l-2 border-foreground pl-4 sm:pl-6 md:pl-8 space-y-3 sm:space-y-4">
               <p class="text-lg sm:text-xl md:text-2xl leading-relaxed">
-                코드와 디자인 사이에서<br />
-                단순함을 찾는 개발자
+                맨날 고민하면서<br />
+                머리가 아픈 개발자
               </p>
               <p class="text-xs sm:text-sm text-muted-foreground uppercase tracking-wide">
                 Frontend Developer — Seoul, Korea
@@ -155,9 +155,9 @@ const profileImage = "https://images.unsplash.com/photo-1507003211169-0a1dd7228f
           <div class="col-span-12 lg:col-span-5">
             {/* Full width on all screens, natural aspect ratio */}
             {/* Max height only on desktop to prevent too tall images */}
-            <div class="w-full lg:max-h-[650px] overflow-hidden bg-muted border border-border">
+            <div class="w-full lg:max-h-[650px] overflow-hidden bg-muted">
               <img
-                src={profileImage}
+                src="/assets/profile.jpeg"
                 alt="프로필 사진"
                 class="w-full h-auto object-contain"
               />
@@ -191,16 +191,16 @@ const profileImage = "https://images.unsplash.com/photo-1507003211169-0a1dd7228f
           
           <div class="border-l-2 border-foreground pl-4 sm:pl-6 md:pl-8 space-y-4 sm:space-y-6">
             <p class="text-lg sm:text-xl md:text-2xl leading-relaxed">
-              저는 사용자 경험의 디테일에 집착하는 프론트엔드 개발자입니다.
+              아직까진 화면을 개발하는 프론트엔드 개발자입니다.
             </p>
             <p class="text-sm sm:text-base md:text-lg text-muted-foreground leading-relaxed">
-              코드를 작성할 때는 6개월 후의 제가 읽을 것이라 생각하며 작성합니다. 
-              디자인할 때는 처음 사용하는 사람의 입장에서 생각합니다. 
-              최적화할 때는 100ms의 차이가 사용자에게 어떤 의미인지 고민합니다.
+              카페에서 일하고 싶어 과감하게 개발자에 도전했고,
+              매일이 좌절의 연속인 개발 생활을 이어 나가고 있습니다.
+              떄려칠까 하다가도 하나 잘 해결될 때의 뿌듯함에 아직도 벗어나질 못하고 있습니다.
             </p>
             <p class="text-sm sm:text-base md:text-lg text-muted-foreground leading-relaxed">
-              복잡한 시스템을 단순하게 만들고, 좋은 개발 경험이 좋은 사용자 경험으로 이어진다고 믿습니다. 
-              테스트 코드를 사랑하고, 타입 안정성을 신뢰하며, 작은 컴포넌트의 합성으로 큰 가치를 만드는 것에 흥미를 느낍니다.
+              혼자하는 개발도 쉽지 않지만, 동료들과 일한다는 것은 더욱 어렵다는 것을 알고 있습니다.
+              그래서 미래에는 1인 개발자로 살아가려 합니다..?
             </p>
           </div>
         </div>
@@ -256,13 +256,13 @@ const profileImage = "https://images.unsplash.com/photo-1507003211169-0a1dd7228f
       <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 sm:py-16 md:py-20 lg:py-24">
         <div class="max-w-3xl mx-auto text-center space-y-8">
           <p class="text-xl sm:text-2xl md:text-3xl tracking-tight leading-relaxed px-4">
-            좋은 코드는 읽는 사람을 배려하고,<br class="hidden sm:inline" />
-            <span class="sm:hidden"> </span>좋은 디자인은 사용하는 사람을 존중합니다.
+            오늘도,<br class="hidden sm:inline" />
+            <span class="sm:hidden"> </span>수고했습니다.
           </p>
           <div class="flex items-center justify-center gap-2">
             <div class="w-8 sm:w-12 h-px bg-foreground"></div>
             <span class="text-xs uppercase tracking-widest text-muted-foreground">
-              Let's Build Together
+              Goodbye
             </span>
             <div class="w-8 sm:w-12 h-px bg-foreground"></div>
           </div>

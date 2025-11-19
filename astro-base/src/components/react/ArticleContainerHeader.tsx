@@ -21,7 +21,7 @@ const ArticleContainerHeader = ({
             </h1>
 
             <p className="text-lg text-muted-foreground max-w-2xl">
-              개발, 디자인, 그리고 배움의 기록
+              지금까지의 생각과 경험을 이야기합니다.
             </p>
           </div>
 
