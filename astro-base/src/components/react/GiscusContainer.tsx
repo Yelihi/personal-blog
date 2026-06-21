@@ -11,9 +11,9 @@ const GiscusContainer = () => {
 
         <Giscus
           repo="Yelihi/personal-blog"
-          repoId="R_kgD0QG9veA"
-          category="blog_comments"
-          categoryId="DIC_kwD0QG9veM4CxXlt"
+          repoId="R_kgDOQG9veA"
+          category="blog comments"
+          categoryId="DIC_kwDOQG9veM4CxXlt"
           mapping="pathname"
           strict="0"
           reactionsEnabled="1"
