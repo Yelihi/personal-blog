@@ -1,5 +1,5 @@
+import { Calendar, Link as LinkIcon, Tag } from 'lucide-react';
 import { motion } from 'motion/react';
-import { Calendar, Tag, Link as LinkIcon } from 'lucide-react';
 import { useState } from 'react';
 
 import type { BlogCardProps } from '@/components/react/interface';
@@ -65,7 +65,7 @@ export function BlogCard({ post, onClick, index, href }: BlogCardProps) {
           </div>
         </div>
 
-        <h3 className="text-xl line-clamp-2 group-hover:text-muted-foreground transition-colors">
+        <h3 className="text-xl line-clamp-2 group-hover:text-muted-foreground transition-colors overflow-hidden h-[52px]">
           {post.title}
         </h3>
 

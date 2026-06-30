@@ -49,6 +49,14 @@
   @apply mb-6 pl-6 space-y-2;
 }
 
+.blog-content ul {
+  @apply list-disc;
+}
+
+.blog-content ol {
+  @apply list-decimal;
+}
+
 .blog-content li {
   @apply leading-relaxed;
 }
@@ -62,12 +70,17 @@
 }
 
 .blog-content table {
-  @apply w-full my-6 border-collapse;
+  @apply block w-full my-6 overflow-x-auto border-collapse;
 }
 
 .blog-content th,
 .blog-content td {
   @apply border border-border px-4 py-2;
+}
+
+.blog-content th:first-child,
+.blog-content td:first-child {
+  @apply whitespace-nowrap;
 }
 
 .blog-content th {

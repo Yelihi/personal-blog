@@ -1,5 +1,5 @@
 ---
-
+import { Font } from 'astro:assets';
 import BaseHead from '@/components/BaseHead.astro';
 import Header from '@/components/react/Header';
 import FooterContainer from '@/components/FooterContainer.astro';
@@ -16,9 +16,12 @@ const currentPage = Astro.url.pathname.replace('/', '');
 
 <!doctype html>
 <html lang="ko">
-
   <head>
-    <BaseHead title={title} description={description ?? "Default Description"} />
+    <BaseHead
+      title={title}
+      description={description ?? 'Default Description'}
+    />
+    <Font cssVariable="--font-pretendard" preload />
   </head>
   <body>
     <Header client:load currentPage={currentPage} />
@@ -28,10 +31,9 @@ const currentPage = Astro.url.pathname.replace('/', '');
       const documentElement = document.documentElement;
       const theme = localStorage.getItem('theme');
 
-      theme === 'dark' ? documentElement.classList.add('dark') : documentElement.classList.remove('dark')
+      theme === 'dark'
+        ? documentElement.classList.add('dark')
+        : documentElement.classList.remove('dark');
     </script>
   </body>
-
-
-
 </html>
