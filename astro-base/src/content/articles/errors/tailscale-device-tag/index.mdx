@@ -440,11 +440,11 @@ Access controls에서 다음을 확인한다.
 
 이번 문제는 한 문장으로 정리할 수 있다.
 
-```text
-Mac mini는 tailnet에 있었지만,
+
+> Mac mini는 tailnet에 있었지만,
 ACL이 기대하는 Device Tag identity를 가지고 있지 않아서
 SSH 대상에 매칭되지 않았다.
-```
+
 
 그래서 ping은 되었지만 SSH는 timeout이 났다.
 
@@ -462,9 +462,9 @@ Tailscale Admin Console
 
 이번 경험에서 가장 크게 배운 것은 이것이다.
 
-```text
-ping 성공은 SSH 성공을 보장하지 않는다.
-```
+
+> **ping 성공은 SSH 성공을 보장하지 않는다.**
+
 
 조금 더 풀면 다음과 같다.
 
