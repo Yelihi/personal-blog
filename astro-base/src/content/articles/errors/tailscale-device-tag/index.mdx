@@ -1,0 +1,498 @@
+---
+title: 'Tailscale SSH Timeout 삽질기'
+excerpt: 'ping은 되는데 SSH만 timeout이 난 이유'
+date: '2026.07.21'
+category: 'Errors'
+categoryId: '5'
+coverImage: './image1.png'
+featured: true
+readTime: '10 min read'
+tags: ['Errors']
+---
+
+## Tailscale SSH Timeout 삽질기: ping은 되는데 SSH만 안 됐던 이유
+
+Tailscale로 MacBook에서 Mac mini에 SSH 접속을 하려고 했는데, 조금 이상한 상황을 겪었다.
+
+```text
+MacBook -> Tailscale -> Mac mini
+
+ping은 된다.
+그런데 SSH만 timeout이 난다.
+```
+
+처음에는 당연히 Mac mini의 SSH 서버가 꺼져 있거나, macOS 방화벽 문제라고 생각했다.
+그런데 이것저것 확인해보니 원인은 생각보다 Tailscale 쪽에 가까웠다.
+
+정확히는 **ACL에서 기대하는 Device Tag가 Mac mini에 연결되어 있지 않았던 것**이 원인이었다.
+Tag를 연결하자 SSH는 바로 성공했다.
+
+이번 글은 Tailscale 전체를 깊게 설명하는 글이라기보다는, 이 문제를 겪으면서 헷갈렸던 부분을 정리한 기록이다.
+특히 “ping은 되는데 왜 SSH는 안 되지?”라는 질문에 집중해보려고 한다.
+
+### 문제 상황
+
+구성은 단순했다.
+
+```text
+[MacBook]
+  - 작업용 장비
+  - Tailscale 로그인됨
+  - SSH client
+
+        |
+        | Tailscale network
+        v
+
+[Mac mini]
+  - 원격 개발용 장비
+  - Tailscale 로그인됨
+  - SSH server
+```
+
+MacBook에서 Mac mini의 Tailscale IP로 SSH 접속을 시도했다.
+
+```bash
+ssh <user>@<mac-mini-tailscale-ip>
+```
+
+그런데 결과는 timeout이었다.
+
+```text
+ssh: connect to host <tailscale-ip> port 22: Operation timed out
+```
+
+이때 헷갈렸던 부분은 ping은 된다는 점이었다.
+
+```bash
+ping <mac-mini-tailscale-ip>
+```
+
+ping 응답이 오니 “Tailscale 네트워크 자체는 살아있는 것 같은데?”라는 생각이 들었다.
+그래서 처음에는 Tailscale ACL보다는 SSH daemon, Remote Login, macOS 방화벽을 먼저 의심했다.
+
+하지만 여기서 놓친 부분이 있었다.
+
+```text
+ping 성공
+  != SSH 성공
+```
+
+ping이 된다는 것은 ICMP 수준에서 응답이 가능하다는 뜻이지, TCP 22번 포트로 SSH 연결이 허용된다는 뜻은 아니었다.
+
+### 먼저 확인했던 것들
+
+당시 흐름을 간단히 정리하면 이렇다.
+
+```text
+1. SSH 접속 시도
+   -> timeout
+
+2. ping 확인
+   -> 성공
+
+3. 22번 포트 확인
+   -> timeout 또는 연결 실패
+
+4. Mac mini의 SSH 설정 확인
+   -> SSH 자체는 켜져 있는 것으로 판단
+
+5. Tailscale 상태 확인
+   -> 양쪽 device는 tailnet에 존재
+
+6. ACL / Tag 쪽 확인
+   -> Mac mini에 기대한 Device Tag가 없음
+
+7. Device에 tag 연결
+   -> SSH 성공
+```
+
+결국 핵심은 “Tailscale에 연결되어 있는가?”가 아니었다.
+
+```text
+현재 접속하려는 device가
+ACL에서 허용한 destination identity와
+일치하는가?
+```
+
+이걸 봐야 했다.
+
+### ping과 SSH는 다르다
+
+문제를 이해하려면 ping과 SSH가 다른 통신이라는 점을 먼저 봐야 한다.
+
+```text
+ping
+  -> ICMP Echo Request / Echo Reply
+  -> 포트 개념 없음
+  -> 상대가 네트워크적으로 응답하는지 확인
+
+SSH
+  -> TCP 연결
+  -> 보통 22번 포트
+  -> 연결 이후 암호화/인증/세션 생성
+```
+
+ping은 상대가 살아 있는지 보는 것에 가깝다.
+반면 SSH는 상대의 22번 TCP 포트에 연결하고, 그 위에서 SSH 인증까지 진행해야 한다.
+
+그래서 ping이 된다고 해도 다음은 전혀 보장되지 않는다.
+
+```text
+TCP 22번 포트가 열려 있다.
+ACL이 TCP 22번 접근을 허용한다.
+Tailscale SSH policy가 허용한다.
+로컬 sshd가 정상 동작한다.
+Mac mini의 방화벽이 허용한다.
+```
+
+이번 문제는 ICMP 수준의 도달성은 있었지만, SSH에 필요한 접근 정책이 맞지 않았던 상황이었다.
+
+### timeout과 refused도 다르게 봐야 한다
+
+SSH 문제를 볼 때는 에러 문구를 구분해서 봐야 한다.
+
+```text
+Permission denied (publickey)
+  -> SSH 서버까지 도달했고 인증에서 실패
+
+Connection refused
+  -> 상대까지 도달했지만 22번 포트에서 받지 않음
+
+Operation timed out
+  -> TCP 연결 자체가 성립하지 않음
+```
+
+이번에는 `Operation timed out`이었다.
+즉 SSH key 문제라기보다는, TCP 연결이 성립하기 전에 중간에서 막히는 쪽에 가까웠다.
+
+그래서 다음처럼 포트 확인을 해보는 것이 좋다.
+
+```bash
+nc -vz <tailscale-ip> 22
+```
+
+결과는 대략 이렇게 해석할 수 있다.
+
+```text
+succeeded
+  -> TCP 22번 포트까지 연결됨
+
+connection refused
+  -> 상대는 도달했지만 해당 포트에서 받지 않음
+
+operation timed out
+  -> ACL, firewall, routing, packet drop 가능성
+```
+
+나는 여기서 timeout 쪽에 가까웠고, 그래서 Tailscale의 ACL과 tag 쪽을 다시 보게 되었다.
+
+### Tailscale에서 Tag는 단순 라벨이 아니었다
+
+처음에는 Tailscale의 Device Tag를 장비를 분류하기 위한 이름표 정도로 생각했다.
+말 그대로 서버면 `tag:server`, 개발용 장비면 `tag:dev` 처럼 붙여두고, 나중에 Admin Console에서 보기 좋게 구분하기 위한 값 정도로 이해했던 것이다.
+
+```text
+tag:server
+tag:dev
+tag:prod
+tag:database
+```
+
+그런데 실제로는 단순한 라벨이라기보다, ACL/grants에서 사용하는 **identity**에 가깝다.
+이 부분을 제대로 이해하지 못해서 꽤 돌아갔다.
+Tailscale에서 ACL을 작성할 때 destination을 IP 하나로만 보는 것이 아니라, user, group, tag 같은 identity 기준으로 바라볼 수 있기 때문이다.
+
+예를 들어 ACL이 다음처럼 되어 있다고 해보자.
+
+```json
+{
+  "acls": [
+    {
+      "action": "accept",
+      "src": ["user@example.com"],
+      "dst": ["tag:server:22"]
+    }
+  ]
+}
+```
+
+이 설정은 이렇게 읽을 수 있다.
+
+```text
+user@example.com 사용자는
+tag:server가 붙은 device의
+22번 포트에 접근할 수 있다.
+```
+
+그렇다면 Mac mini는 반드시 `tag:server`를 가지고 있어야 한다.
+Mac mini가 tailnet에 존재하더라도, `tag:server`가 없다면 위 정책의 destination에 매칭되지 않는다.
+즉 “Mac mini가 Tailscale에 연결되어 있다”와 “Mac mini가 `tag:server`라는 identity를 가지고 있다”는 다른 이야기다.
+
+이번 문제가 딱 그랬다.
+나는 Mac mini를 서버처럼 쓰고 있었고, 머릿속에서는 당연히 ACL의 `tag:server` 대상이라고 생각했다.
+하지만 실제 Tailscale policy 입장에서는 그렇게 봐주지 않는다.
+정책은 내 의도를 읽는 것이 아니라, 실제 device에 연결된 identity만 보고 판단한다.
+
+```text
+내가 기대한 상태:
+
+MacBook(user)
+  -> ACL 허용
+  -> tag:server
+  -> Mac mini
+  -> SSH 22
+```
+
+하지만 실제 상태는 다음에 가까웠다.
+
+```text
+실제 상태:
+
+MacBook(user)
+  -> ACL은 tag:server 대상만 허용
+  -> Mac mini에는 tag:server가 연결되어 있지 않음
+  -> destination match 실패
+  -> SSH timeout
+```
+
+그림으로 보면 조금 더 명확하다.
+
+```text
+                Tailnet Policy
+        +-----------------------------+
+        | allow user -> tag:server:22 |
+        +-----------------------------+
+                         |
+                         v
+
+[MacBook / user] ---- SSH ----> [Mac mini / no tag]
+       |                              |
+       |                              |
+       +---------- policy mismatch ---+
+
+결과: SSH timeout
+```
+
+Tag를 연결한 뒤에는 같은 정책이라도 대상 device가 달라진다.
+
+```text
+                Tailnet Policy
+        +-----------------------------+
+        | allow user -> tag:server:22 |
+        +-----------------------------+
+                         |
+                         v
+
+[MacBook / user] ---- SSH ----> [Mac mini / tag:server]
+                                      |
+                                      |
+                               policy match
+
+결과: SSH 성공
+```
+
+결국 SSH daemon을 재설치하거나, 방화벽을 억지로 건드리는 문제가 아니었다.
+ACL에서 대상으로 삼는 identity와 실제 device identity를 맞추면 되는 문제였다.
+생각해보면 간단한데, 당시에는 ping이 된다는 사실 때문에 계속 네트워크 연결 자체는 정상이라고 판단했고, 그래서 오히려 정책 매칭 쪽을 늦게 보게 되었다.
+
+### Device Tag 연결
+
+Admin Console에서는 보통 다음 흐름으로 tag를 연결할 수 있다.
+
+```text
+Machines
+  -> 대상 device 선택
+  -> Edit tags
+  -> tag 추가
+  -> Save
+```
+
+주의할 점은 tag가 tailnet policy의 `tagOwners`에 먼저 정의되어 있어야 한다는 것이다.
+
+```json
+{
+  "tagOwners": {
+    "tag:server": ["user@example.com"]
+  }
+}
+```
+
+CLI로도 advertise할 수 있다.
+
+```bash
+sudo tailscale up --advertise-tags=tag:server --force-reauth
+```
+
+또는 login 과정에서 다음처럼 사용할 수 있다.
+
+```bash
+sudo tailscale login --advertise-tags=tag:server
+```
+
+다만 macOS GUI 앱을 쓰는지, CLI와 `tailscaled`를 쓰는지, auth key를 쓰는지에 따라 동작이 달라질 수 있다.
+그래서 실제 운영 환경에서는 현재 client 버전과 공식 문서를 같이 확인하는 편이 좋다.
+
+### 일반 SSH over Tailscale과 Tailscale SSH
+
+여기서 하나 더 헷갈릴 수 있는 부분이 있다.
+일반 SSH over Tailscale과 Tailscale SSH는 다르다.
+
+```text
+일반 SSH over Tailscale:
+  ssh client -> Tailscale IP -> remote sshd
+  인증은 기존 SSH key / password 체계
+  Tailscale은 네트워크 경로와 ACL을 담당
+
+Tailscale SSH:
+  Tailscale이 SSH 인증/인가까지 관리
+  tailnet policy의 ssh 섹션이 중요
+```
+
+일반 SSH over Tailscale에서는 주로 다음을 본다.
+
+```text
+- Tailscale IP 도달성
+- ACL/grants의 22번 포트 허용
+- sshd 실행 여부
+- 로컬 방화벽
+- SSH key
+```
+
+Tailscale SSH를 사용하고 있다면 추가로 다음도 봐야 한다.
+
+```text
+- tailscale up --ssh 또는 tailscale set --ssh
+- tailnet policy의 ssh rule
+- src / dst / users / check 설정
+```
+
+이번 문제의 핵심은 ACL/Tag가 맞지 않아 SSH 대상이 정책에 매칭되지 않았다는 점이었다.
+Tailscale SSH를 쓰고 있었다면 `ssh` policy까지 같이 확인해야 했을 것이다.
+
+### 다음에 같은 문제가 생기면 볼 순서
+
+이번 문제 이후로는 “ping은 되는데 SSH만 timeout”이 나면 아래 순서로 보려고 한다.
+
+#### 1. 대상 device가 맞는가
+
+```bash
+tailscale status
+tailscale status --json
+```
+
+확인할 것:
+
+```text
+- 접속하려는 IP가 정말 Mac mini인가?
+- 예전 device가 tailnet에 남아 있지 않은가?
+- device가 online인가?
+- MagicDNS 이름이 기대한 device를 가리키는가?
+- Tags 값이 기대한 대로 보이는가?
+```
+
+#### 2. ping과 TCP 22를 분리해서 봤는가
+
+```bash
+ping <tailscale-ip>
+nc -vz <tailscale-ip> 22
+```
+
+판단 기준은 다음과 같다.
+
+```text
+ping 실패 + nc 실패
+  -> Tailscale 연결, route, device offline 가능성
+
+ping 성공 + nc timeout
+  -> ACL, firewall, port 22, sshd 가능성
+
+ping 성공 + nc succeeded + ssh 인증 실패
+  -> SSH key, user, Tailscale SSH policy 가능성
+```
+
+#### 3. Mac mini의 SSH 서버는 켜져 있는가
+
+Mac mini에서 확인한다.
+
+```bash
+sudo systemsetup -getremotelogin
+sudo lsof -iTCP:22 -sTCP:LISTEN
+```
+
+macOS에서는 Remote Login이 켜져 있어야 하고, 22번 포트를 듣는 프로세스가 있어야 한다.
+
+#### 4. ACL / grants의 destination이 실제 device와 맞는가
+
+Access controls에서 다음을 확인한다.
+
+```text
+- source가 내 user 또는 group을 포함하는가?
+- destination이 실제 device identity와 일치하는가?
+- dst에 tag를 썼다면 device에 해당 tag가 붙어 있는가?
+- port 22가 허용되어 있는가?
+- Tailscale SSH를 쓴다면 ssh rule도 있는가?
+```
+
+결국 이번 문제에서는 이 부분이 핵심이었다.
+
+### 정리
+
+이번 문제는 한 문장으로 정리할 수 있다.
+
+```text
+Mac mini는 tailnet에 있었지만,
+ACL이 기대하는 Device Tag identity를 가지고 있지 않아서
+SSH 대상에 매칭되지 않았다.
+```
+
+그래서 ping은 되었지만 SSH는 timeout이 났다.
+
+해결은 간단했다.
+
+```text
+Tailscale Admin Console
+  -> Machines
+  -> Mac mini
+  -> Edit tags
+  -> ACL에서 기대하는 tag 연결
+  -> SSH 재시도
+  -> 성공
+```
+
+이번 경험에서 가장 크게 배운 것은 이것이다.
+
+```text
+ping 성공은 SSH 성공을 보장하지 않는다.
+```
+
+조금 더 풀면 다음과 같다.
+
+```text
+ICMP 도달성
+  != TCP 포트 접근 가능
+
+TCP 포트 접근 가능
+  != SSH 인증 성공
+
+Tailscale 연결됨
+  != ACL/grants에서 허용됨
+
+Device가 tailnet에 있음
+  != 올바른 tag identity를 가짐
+```
+
+Tailscale에서는 어떤 IP인가보다 어떤 identity인가가 더 중요할 때가 있다.
+앞으로 비슷한 문제가 생기면 SSH 서버부터 무작정 의심하기 전에, user, device, tag, policy가 어떻게 연결되어 있는지 먼저 같이 봐야겠다.
+
+### 참고 자료
+
+- [Tailscale Docs](https://tailscale.com/docs)
+- [Tailscale: Group devices with tags](https://tailscale.com/docs/features/tags)
+- [Tailscale: Manage permissions using ACLs](https://tailscale.com/docs/features/access-control/acls)
+- [Tailscale: Grants](https://tailscale.com/docs/features/access-control/grants)
+- [Tailscale: Tailscale SSH](https://tailscale.com/docs/features/tailscale-ssh)
+- [Tailscale: Device connectivity](https://tailscale.com/docs/reference/device-connectivity)
+- [RFC 792: Internet Control Message Protocol](https://www.rfc-editor.org/rfc/rfc792)
+- [RFC 9293: Transmission Control Protocol](https://www.rfc-editor.org/rfc/rfc9293)
+- [RFC 4251: The Secure Shell Protocol Architecture](https://www.rfc-editor.org/rfc/rfc4251)
