@@ -1,0 +1,60 @@
+{
+  "diagram_type": "architecture",
+  "output": "docs/architecture.html",
+  "specification": {
+    "sha256": "036f684b77edbe0107bb97c5c4c4e0b99c27e07b5ecfbe2d8dfff7fc4f34f3c1",
+    "bytes": 3943
+  },
+  "artifact": {
+    "sha256": "239cc53b82ae5a50d21cdaca7485bf875a44918e7eb1c58db379136322ec3132",
+    "bytes": 805922
+  },
+  "validation": {
+    "checksPassed": 9,
+    "checkCount": 9,
+    "compositionProfile": "showcase",
+    "compositionStatus": "pass",
+    "errors": 0,
+    "warnings": 0
+  },
+  "repository_evidence": {
+    "verified": true,
+    "repository": "https://github.com/Yelihi/personal-blog",
+    "revision": "9323aa97b5f0f3e8e19122f871257ac015d50212",
+    "references": 9
+  },
+  "browser_evidence": "pass",
+  "viewports": [
+    {
+      "width": 1440,
+      "height": 900,
+      "scrollWidth": 1440,
+      "scrollHeight": 900,
+      "ok": true
+    },
+    {
+      "width": 1600,
+      "height": 1000,
+      "scrollWidth": 1600,
+      "scrollHeight": 1000,
+      "ok": true
+    },
+    {
+      "width": 1920,
+      "height": 1080,
+      "scrollWidth": 1920,
+      "scrollHeight": 1080,
+      "ok": true
+    },
+    {
+      "width": 2048,
+      "height": 1320,
+      "scrollWidth": 2048,
+      "scrollHeight": 1320,
+      "ok": true
+    }
+  ],
+  "visual_review": "passed",
+  "visual_review_scope": "1440x900 and 2048x1320 light/dark screenshots: labels, arrows, node fit and vertical balance",
+  "correction_rounds": 1
+}

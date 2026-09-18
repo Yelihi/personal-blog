@@ -1,0 +1,194 @@
+{
+  "schema_version": 1,
+  "diagram_type": "architecture",
+  "meta": {
+    "title": "Yelihi 블로그 아키텍처",
+    "quality_profile": "showcase",
+    "viewBox": [
+      1120,
+      650
+    ],
+    "repository": {
+      "url": "https://github.com/Yelihi/personal-blog",
+      "provider": "github",
+      "revision": "9323aa97b5f0f3e8e19122f871257ac015d50212"
+    }
+  },
+  "components": [
+    {
+      "id": "article-files",
+      "type": "external",
+      "label": "글과 이미지",
+      "sublabel": "Markdown / MDX · 로컬 파일",
+      "pos": [
+        40,
+        100
+      ],
+      "size": [
+        230,
+        88
+      ],
+      "sources": [
+        {
+          "path": "astro-base/src/content.config.ts"
+        }
+      ]
+    },
+    {
+      "id": "static-build",
+      "type": "backend",
+      "label": "Astro 정적 빌드",
+      "sublabel": "콘텐츠 검증 · 페이지 생성",
+      "pos": [
+        440,
+        100
+      ],
+      "size": [
+        230,
+        88
+      ],
+      "sources": [
+        {
+          "path": "astro-base/astro.config.mjs"
+        },
+        {
+          "path": "astro-base/src/pages/articles/[...slug].astro"
+        },
+        {
+          "path": "astro-base/src/composables/transferImagesFormat.ts"
+        }
+      ]
+    },
+    {
+      "id": "build-output",
+      "type": "frontend",
+      "label": "dist/ 빌드 결과",
+      "sublabel": "HTML · CSS · JS · 이미지 · RSS",
+      "pos": [
+        840,
+        100
+      ],
+      "size": [
+        230,
+        88
+      ],
+      "sources": [
+        {
+          "path": "astro-base/package.json"
+        },
+        {
+          "path": "astro-base/src/pages/rss.xml.js"
+        }
+      ]
+    },
+    {
+      "id": "pages-host",
+      "type": "cloud",
+      "label": "Cloudflare Pages",
+      "sublabel": "yelihi.pages.dev",
+      "pos": [
+        840,
+        430
+      ],
+      "size": [
+        230,
+        88
+      ]
+    },
+    {
+      "id": "reader-browser",
+      "type": "frontend",
+      "label": "독자의 브라우저",
+      "sublabel": "React 필터 · 테마 · 목차",
+      "pos": [
+        440,
+        430
+      ],
+      "size": [
+        230,
+        88
+      ],
+      "sources": [
+        {
+          "path": "astro-base/src/layouts/Default.astro"
+        },
+        {
+          "path": "astro-base/src/components/react/ArticlesContainer.tsx"
+        }
+      ]
+    },
+    {
+      "id": "blog-comments",
+      "type": "external",
+      "label": "Giscus 댓글",
+      "sublabel": "GitHub Discussions 연동",
+      "pos": [
+        40,
+        430
+      ],
+      "size": [
+        230,
+        88
+      ],
+      "sources": [
+        {
+          "path": "astro-base/src/components/react/GiscusContainer.tsx"
+        }
+      ]
+    }
+  ],
+  "connections": [
+    {
+      "id": "load-articles",
+      "from": "article-files",
+      "to": "static-build",
+      "label": "glob · 스키마 검증"
+    },
+    {
+      "id": "generate-site",
+      "from": "static-build",
+      "to": "build-output",
+      "label": "빌드 시 생성"
+    },
+    {
+      "id": "publish-assets",
+      "from": "build-output",
+      "to": "pages-host",
+      "label": "정적 파일 배포",
+      "labelAt": [
+        955,
+        310
+      ]
+    },
+    {
+      "id": "serve-pages",
+      "from": "pages-host",
+      "to": "reader-browser",
+      "label": "HTTPS 응답"
+    },
+    {
+      "id": "load-comments",
+      "from": "reader-browser",
+      "to": "blog-comments",
+      "label": "댓글 조회·작성"
+    }
+  ],
+  "cards": [
+    {
+      "dot": "emerald",
+      "title": "빌드 시점",
+      "items": [
+        "글 변경은 재빌드·배포로 반영",
+        "Sharp로 표지 이미지를 WebP로 변환"
+      ]
+    },
+    {
+      "dot": "cyan",
+      "title": "방문 시점",
+      "items": [
+        "client:* 지시자로 React 실행 시점 분리",
+        "댓글은 외부 서비스가 담당"
+      ]
+    }
+  ]
+}
