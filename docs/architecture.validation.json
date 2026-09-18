@@ -1,6 +1,6 @@
 {
   "diagram_type": "architecture",
-  "output": "docs/architecture.html",
+  "output": "astro-base/public/architecture.html",
   "specification": {
     "sha256": "036f684b77edbe0107bb97c5c4c4e0b99c27e07b5ecfbe2d8dfff7fc4f34f3c1",
     "bytes": 3943
@@ -56,5 +56,14 @@
   ],
   "visual_review": "passed",
   "visual_review_scope": "1440x900 and 2048x1320 light/dark screenshots: labels, arrows, node fit and vertical balance",
-  "correction_rounds": 1
+  "correction_rounds": 1,
+  "export": {
+    "path": "astro-base/public/architecture.png",
+    "format": "png",
+    "method": "Viewer Export → PNG",
+    "theme": "light",
+    "sha256": "e92560b0b37c9ba8c2e51321ebac0082cb7372364a975203379ea9d94b364a94",
+    "bytes": 384500,
+    "visual_review": "passed"
+  }
 }

@@ -10,18 +10,11 @@ Astro, React, TypeScript, Tailwind CSS를 사용하며, 글은 Markdown/MDX로 �
 
 Astro의 정적 사이트 생성(SSG)을 중심으로 구성되어 있습니다. 글을 읽는 요청마다 서버에서 페이지를 만들지 않고, 빌드 시 생성한 파일을 Cloudflare Pages에서 제공합니다. 별도 애플리케이션 서버나 자체 데이터베이스는 없으며, 상호작용이 필요한 부분에 React를 사용합니다.
 
-```mermaid
-flowchart LR
-    content["Markdown / MDX · 이미지"] -->|"콘텐츠 검증·렌더링"| build["Astro 정적 빌드"]
-    build -->|"생성"| output["dist/: HTML · CSS · JS · 이미지 · RSS"]
-    output -->|"배포"| pages["Cloudflare Pages"]
-    pages -->|"HTTPS 응답"| browser["브라우저 · React 컴포넌트"]
-    browser -->|"댓글 조회·작성"| comments["Giscus · GitHub Discussions"]
-```
+[![Yelihi 블로그 아키텍처](astro-base/public/architecture.png)](https://yelihi.pages.dev/architecture)
 
-[Archify 인터랙티브 다이어그램](docs/architecture.html) · [다이어그램 원본](docs/architecture.json)
+[인터랙티브 다이어그램 열기](https://yelihi.pages.dev/architecture) · [PNG 이미지](https://yelihi.pages.dev/architecture.png) · [다이어그램 원본](docs/architecture.json)
 
-HTML 파일을 다운로드한 뒤 브라우저에서 열면 확대와 구성 요소별 코드 근거 탐색이 가능합니다. 다이어그램 본문은 한국어이며, 뷰어의 기본 UI와 HTML 문서 언어는 영어입니다.
+이미지를 클릭하면 배포된 Archify 뷰어가 열립니다. 확대와 구성 요소별 코드 근거 탐색이 가능하며, 오른쪽 위 **Export**에서 PNG·SVG 등으로 내려받을 수 있습니다. 다이어그램 본문은 한국어이며, 뷰어의 기본 UI와 HTML 문서 언어는 영어입니다.
 
 ### 구성과 역할
 
