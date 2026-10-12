@@ -1,0 +1,53 @@
+---
+import { getCollection, render } from 'astro:content';
+import Default from '@/layouts/Default.astro';
+import NoteCover from '@/components/react/notes/NoteCover';
+import { buildNoteIndex } from '@/composables/buildNoteIndex';
+import { noteSlug } from '../../../scripts/note-content.mjs';
+import '@/styles/notes.css';
+export async function getStaticPaths() {
+  const entries = await getCollection(
+    'notes',
+    ({ data }) => import.meta.env.DEV || !data.draft
+  );
+  const index = await buildNoteIndex(entries);
+  return entries.map((entry) => ({
+    params: { slug: noteSlug(entry.id) },
+    props: {
+      entry,
+      note: index.notes.find((note) => note.id === noteSlug(entry.id))!,
+      fallback: index.fallbackCover,
+    },
+  }));
+}
+const { entry, note, fallback } = Astro.props;
+const { Content } = await render(entry);
+---
+
+<Default
+  title={`${note.title} · Notes`}
+  description={note.excerpt || note.title}
+  image={note.cover.src}
+  currentPage="notes"
+>
+  <noscript slot="head"
+    ><style>
+      .note-image-frame img {
+        opacity: 1 !important;
+      }
+    </style></noscript
+  >
+  <main class="note-detail">
+    <a class="note-back" href="/notes/">← 생각의 기록</a>
+    <article>
+      <header class="note-detail-intro">
+        <time datetime={note.dateISO}>{note.dateLabel}</time><h1>
+          {note.title}
+        </h1>
+      </header>
+      <NoteCover client:load image={note.cover} fallback={fallback} priority />
+      <div class="note-body"><Content /></div>
+    </article>
+    <a class="note-back" href="/notes/">모든 노트 보기 ↗</a>
+  </main>
+</Default>

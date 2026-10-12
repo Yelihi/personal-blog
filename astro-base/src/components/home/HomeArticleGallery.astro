@@ -1,0 +1,67 @@
+---
+import type { Article } from '@/components/react/interface';
+import UnsplashCredit from '@/components/react/UnsplashCredit';
+
+interface Props {
+  articles: Article[];
+}
+
+const { articles } = Astro.props;
+---
+
+<section
+  class="home-articles home-reveal"
+  aria-labelledby="home-articles-title"
+>
+  <div class="home-section-heading">
+    <h2 id="home-articles-title">ARTICLES</h2>
+    <a href="/articles">모든 글 보기</a>
+  </div>
+  {
+    articles.length ? (
+      <div class="home-article-grid">
+        {articles.map((article, index) => {
+          const cover = article.data.coverImage;
+          return (
+            <div class="home-article-slot">
+              <article class="home-article">
+                <a href={`/articles/${article.id}`}>
+                  <span
+                    class:list={['home-article-media', { 'is-failed': !cover }]}
+                    style={
+                      cover
+                        ? `--home-image-ratio: ${cover.width} / ${cover.height}`
+                        : undefined
+                    }
+                  >
+                    {cover ? (
+                      <img
+                        src={cover.src}
+                        width={cover.width}
+                        height={cover.height}
+                        alt={
+                          article.data.unsplashCover?.alt ?? article.data.title
+                        }
+                        loading={index === 0 ? 'eager' : 'lazy'}
+                        decoding="async"
+                        fetchpriority={index === 0 ? 'high' : undefined}
+                      />
+                    ) : null}
+                    <span class="home-image-placeholder" aria-hidden="true" />
+                  </span>
+                  <h3>{article.data.title}</h3>
+                </a>
+                <time datetime={article.data.date.replaceAll('.', '-')}>
+                  {article.data.date}
+                </time>
+              </article>
+              <UnsplashCredit cover={article.data.unsplashCover} />
+            </div>
+          );
+        })}
+      </div>
+    ) : (
+      <p class="home-section-empty">아직 게시된 글이 없어요.</p>
+    )
+  }
+</section>

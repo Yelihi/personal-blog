@@ -1,0 +1,46 @@
+---
+import { getCollection } from 'astro:content';
+import Default from '@/layouts/Default.astro';
+import NotesExplorer from '@/components/react/notes/NotesExplorer';
+import { buildNoteIndex } from '@/composables/buildNoteIndex';
+import '@/styles/notes.css';
+const entries = await getCollection(
+  'notes',
+  ({ data }) => import.meta.env.DEV || !data.draft
+);
+const index = await buildNoteIndex(entries);
+---
+
+<Default
+  title="Notes · Yelihi"
+  description="완성되지 않은 생각도 남겨두기. 개발과 AI를 사용하며 기록하는 생각 노트."
+  currentPage="notes"
+  notesIndex
+>
+  <Fragment slot="head">
+    <script is:inline>
+      if ('scrollRestoration' in history) {
+        history.scrollRestoration = 'manual';
+        addEventListener('pagehide', () => {
+          history.scrollRestoration = 'auto';
+        });
+        addEventListener('pageshow', () => {
+          history.scrollRestoration = 'manual';
+        });
+      }
+    </script>
+    <noscript
+      ><style>
+        .notes-explorer .note-image-frame img {
+          opacity: 1 !important;
+        }
+        .note-selection-line,
+        .note-selected-label,
+        .note-timeline-footer {
+          display: none !important;
+        }
+      </style></noscript
+    >
+  </Fragment>
+  <NotesExplorer client:load index={index} />
+</Default>

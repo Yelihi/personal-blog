@@ -8,10 +8,12 @@ interface Props {
   title: string;
   description?: string;
   currentPage?: string;
+  image?: string;
+  notesIndex?: boolean;
 }
 
-const { title, description } = Astro.props;
-const currentPage = Astro.url.pathname.replace('/', '');
+const { title, description, image, notesIndex = false } = Astro.props;
+const currentPage = Astro.props.currentPage ?? Astro.url.pathname.split('/')[1];
 ---
 
 <!doctype html>
@@ -20,16 +22,23 @@ const currentPage = Astro.url.pathname.replace('/', '');
     <BaseHead
       title={title}
       description={description ?? 'Default Description'}
+      image={image}
     />
+    <slot name="head" />
     <Font cssVariable="--font-pretendard" preload />
   </head>
-  <body>
+  <body class:list={[{ 'notes-index-page': notesIndex }]}>
     <Header client:load currentPage={currentPage} />
     <slot />
-    <FooterContainer />
+    {!notesIndex && <FooterContainer />}
     <script>
       const documentElement = document.documentElement;
-      const theme = localStorage.getItem('theme');
+      let theme = 'light';
+      try {
+        theme = localStorage.getItem('theme') ?? 'light';
+      } catch {
+        /* Theme remains usable without storage. */
+      }
 
       theme === 'dark'
         ? documentElement.classList.add('dark')

@@ -2,6 +2,7 @@
 import '@/pages/articles/markdown.css';
 import '../../styles/global.css';
 
+import UnsplashCredit from '@/components/react/UnsplashCredit';
 import GiscusContainer from '@/components/react/GiscusContainer';
 import { TableOfContents } from '@/components/react/TableOfContents';
 import { transferImagesFormat } from '@/composables/transferImagesFormat';
@@ -114,12 +115,17 @@ const relatedArticles = transferedImagesFormatAllArticles.filter(
         {/* Cover Image */}
         {
           article.data.coverImage && (
-            <div class="mb-12 aspect-video overflow-hidden border border-border">
+            <div class="mb-12">
+            <div class="aspect-video overflow-hidden border border-border">
               <img
                 src={article.data.coverImage.src}
-                alt={article.data.title}
+                alt={article.data.unsplashCover?.alt ?? article.data.title}
+                width={article.data.coverImage.width}
+                height={article.data.coverImage.height}
                 class="w-full h-full object-cover"
               />
+            </div>
+            <UnsplashCredit cover={article.data.unsplashCover} />
             </div>
           )
         }

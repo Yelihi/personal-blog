@@ -4,13 +4,20 @@
   "version": "0.0.1",
   "scripts": {
     "dev": "astro dev",
+    "notes:prepare": "node scripts/prepare-note-covers.mjs",
+    "prebuild": "node scripts/prepare-note-covers.mjs --local-only",
     "build": "npx playwright install chromium && astro build",
     "preview": "astro preview",
     "astro": "astro",
     "lint": "prettier --check . && eslint .",
     "lint:fix": "prettier --write . && eslint --fix .",
     "format": "prettier --write .",
-    "add": "npx shadcn@latest add"
+    "add": "npx shadcn@latest add",
+    "lint:notes": "node scripts/check-notes.mjs",
+    "test:notes:unit": "node --experimental-strip-types --test tests/notes/timeline.test.ts",
+    "test:notes:covers": "node --test tests/notes/covers.test.mjs",
+    "test:notes:browser": "node tests/notes/browser.mjs",
+    "check:notes": "astro sync && tsc --noEmit -p tsconfig.notes.json"
   },
   "dependencies": {
     "@astrojs/check": "^0.9.9",

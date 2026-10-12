@@ -22,3 +22,11 @@ pnpm-debug.log*
 
 # jetbrains setting folder
 .idea/
+
+# Notes generated assets and verification
+.cache/
+public/notes-media/
+src/data/.note-covers.lock
+src/data/note-covers.json.*.tmp
+.env.*
+!.env.example

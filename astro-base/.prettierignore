@@ -32,3 +32,6 @@ pids
 *.pid
 *.seed
 *.pid.lock
+
+# Generated Notes validation/cache outputs
+.cache/

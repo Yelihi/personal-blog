@@ -1,0 +1,144 @@
+---
+import type { NoteSummary } from '@/components/react/notes/interface';
+
+interface Props {
+  notes: readonly NoteSummary[];
+}
+
+const { notes } = Astro.props;
+---
+
+<section class="home-notes home-reveal" aria-labelledby="home-notes-title">
+  <div class="home-section-heading">
+    <h2 id="home-notes-title">
+      <span class="home-note-dot" aria-hidden="true"></span>NOTES <span
+        class="home-note-subtitle">/ 생각의 기록</span
+      >
+    </h2>
+    <a href="/notes/">모든 노트 보기</a>
+  </div>
+  {
+    notes.length ? (
+      <>
+        <div class="home-note-bar">
+          <span id="home-note-range" role="status" aria-live="polite" />
+          <div id="home-note-controls" class="home-note-controls" hidden>
+            <button
+              id="home-note-prev"
+              type="button"
+              aria-label="이전 노트"
+              aria-controls="home-note-track"
+            >
+              이전
+            </button>
+            <button
+              id="home-note-next"
+              type="button"
+              aria-label="다음 노트"
+              aria-controls="home-note-track"
+            >
+              다음
+            </button>
+          </div>
+        </div>
+        <div
+          id="home-note-track"
+          class="home-note-track"
+          role="region"
+          aria-label="최근 생각 노트 · 좌우 방향키로 이동"
+          tabindex="0"
+        >
+          {notes.map((note) => (
+            <article class="home-note-card">
+              <time datetime={note.dateISO}>{note.dateLabel}</time>
+              <a href={note.href}>
+                <h3>{note.title}</h3>
+                <span class="home-note-read">읽기</span>
+              </a>
+            </article>
+          ))}
+        </div>
+      </>
+    ) : (
+      <div id="home-notes-empty" class="home-notes-empty">
+        아직 기록된 노트가 없어요.
+      </div>
+    )
+  }
+</section>
+
+<script>
+  const track = document.querySelector<HTMLElement>('#home-note-track');
+  const range = document.querySelector<HTMLElement>('#home-note-range');
+  const controls = document.querySelector<HTMLElement>('#home-note-controls');
+  const previous = document.querySelector<HTMLButtonElement>('#home-note-prev');
+  const next = document.querySelector<HTMLButtonElement>('#home-note-next');
+  if (track && range && controls && previous && next) {
+    const cards = [...track.querySelectorAll<HTMLElement>('.home-note-card')];
+    const reduced = matchMedia('(prefers-reduced-motion: reduce)');
+    let target = 0;
+    const cardWidth = () => cards[0].getBoundingClientRect().width;
+    const maxStart = () =>
+      Math.max(
+        0,
+        Math.round((track.scrollWidth - track.clientWidth) / cardWidth())
+      );
+    const update = () => {
+      target = Math.min(target, maxStart());
+      const visibleCount = Math.max(
+        1,
+        Math.floor(track.clientWidth / cardWidth() + 0.01)
+      );
+      range.textContent = `${target + 1}–${Math.min(cards.length, target + visibleCount)} / ${cards.length}`;
+      previous.disabled = target === 0;
+      next.disabled = target >= maxStart();
+      controls.hidden = track.scrollWidth <= track.clientWidth + 2;
+    };
+    const move = (direction: number) => {
+      target = Math.max(0, Math.min(maxStart(), target + direction));
+      update();
+      track.scrollTo({
+        left: target * cardWidth(),
+        behavior: reduced.matches ? 'auto' : 'smooth',
+      });
+    };
+    const syncTarget = () => {
+      target = Math.round(track.scrollLeft / cardWidth());
+      update();
+    };
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (
+        event.target !== track ||
+        !['ArrowLeft', 'ArrowRight', 'Home', 'End'].includes(event.key)
+      )
+        return;
+      event.preventDefault();
+      if (event.key === 'Home' || event.key === 'End') {
+        target = event.key === 'Home' ? 0 : maxStart();
+        update();
+        track.scrollTo({
+          left: event.key === 'Home' ? 0 : track.scrollWidth,
+          behavior: reduced.matches ? 'auto' : 'smooth',
+        });
+      } else move(event.key === 'ArrowLeft' ? -1 : 1);
+    };
+    const onPrevious = () => move(-1);
+    const onNext = () => move(1);
+    previous.addEventListener('click', onPrevious);
+    next.addEventListener('click', onNext);
+    track.addEventListener('scrollend', syncTarget);
+    track.addEventListener('keydown', onKeyDown);
+    const resize = new ResizeObserver(syncTarget);
+    resize.observe(track);
+    const cleanup = (event: PageTransitionEvent) => {
+      if (event.persisted) return;
+      previous.removeEventListener('click', onPrevious);
+      next.removeEventListener('click', onNext);
+      track.removeEventListener('scrollend', syncTarget);
+      track.removeEventListener('keydown', onKeyDown);
+      resize.disconnect();
+    };
+    addEventListener('pagehide', cleanup, { once: true });
+    update();
+  }
+</script>

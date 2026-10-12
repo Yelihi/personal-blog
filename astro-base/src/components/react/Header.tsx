@@ -7,6 +7,7 @@ interface Props {
 const navItems: { id: string; label: string; href: string }[] = [
   { id: '', label: 'Home', href: '/' },
   { id: 'articles', label: 'Articles', href: '/articles' },
+  { id: 'notes', label: 'Notes', href: '/notes/' },
   { id: 'about', label: 'About', href: '/about' },
 ];
 
@@ -14,25 +15,29 @@ const Header = ({ currentPage }: Props) => {
   const toggleTheme = () => {
     document.documentElement.classList.toggle('dark');
 
-    localStorage.setItem(
-      'theme',
-      document.documentElement.classList.contains('dark') ? 'dark' : 'light'
-    );
+    try {
+      localStorage.setItem(
+        'theme',
+        document.documentElement.classList.contains('dark') ? 'dark' : 'light'
+      );
+    } catch {
+      /* The selected theme still applies for this page. */
+    }
   };
 
   return (
     <header className="sticky top-0 z-50 backdrop-blur-sm bg-background/95 border-b border-border">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="grid grid-cols-12 gap-4 items-center h-20">
+        <div className="grid grid-cols-12 gap-1 sm:gap-4 items-center h-20">
           {/* Logo */}
-          <div className="col-span-4 lg:col-span-3">
+          <div className="col-span-2 lg:col-span-3">
             <a
               href="/"
               aria-label="Home"
-              className="tracking-tight flex items-center gap-3 hover:translate-x-0.5 transition-transform"
+              className="tracking-tight flex items-center gap-1 sm:gap-3 hover:translate-x-0.5 transition-transform"
             >
               <div className="w-px h-8 bg-foreground"></div>
-              <span className="text-xl">Yelihi</span>
+              <span className="text-base sm:text-xl">Yelihi</span>
             </a>
           </div>
 
@@ -58,9 +63,9 @@ const Header = ({ currentPage }: Props) => {
           </nav>
 
           {/* Right side */}
-          <div className="col-span-8 lg:col-span-3 flex items-center justify-end gap-6">
+          <div className="col-span-10 lg:col-span-3 flex items-center justify-end gap-2 sm:gap-6">
             {/* Mobile/Tablet Navigation (< 1024px) */}
-            <nav className="flex lg:hidden items-center gap-4">
+            <nav className="flex lg:hidden items-center gap-2 sm:gap-4">
               {navItems.map((item) => (
                 <a
                   key={item.id}

@@ -1,157 +1,67 @@
 ---
 import '../styles/global.css';
-import { ArrowRight } from 'lucide-react';
+import '../styles/home.css';
 import { getCollection } from 'astro:content';
-
 import { transferImagesFormat } from '@/composables/transferImagesFormat';
-import FeatureBlogIntroduceCard from '@/components/react/FeatureBlogIntroduceCard';
-import { BlogCard } from '@/components/react/BlogCard';
+import { buildNoteIndex } from '@/composables/buildNoteIndex';
+import HomeIntro from '@/components/home/HomeIntro.astro';
+import HomeArticleGallery from '@/components/home/HomeArticleGallery.astro';
+import HomeNoteSlider from '@/components/home/HomeNoteSlider.astro';
 import DefaultLayout from '@/layouts/Default.astro';
 import { SITE_DESCRIPTION, SITE_TITLE } from '@/consts';
 
-
-// 모든 blog article 을 가져옵니다.
-const articles = await getCollection('articles');
-const transferedImagesFormatArticles = await transferImagesFormat(articles, 'webp');
-
-// 최근 articles
-const recentArticles = transferedImagesFormatArticles.sort((first, second) => {
-  const firstDate = new Date(first.data.date.replace(/\./g, '-'));
-  const secondDate = new Date(second.data.date.replace(/\./g, '-'));
-  return secondDate.getTime() - firstDate.getTime();
-}).slice(0, 6);
-
-
-// featured articles
-const featuredArticle = transferedImagesFormatArticles.find((article) => article.data.featured);
-
+const articles = await transferImagesFormat(
+  await getCollection('articles'),
+  'webp'
+);
+const recentArticles = articles
+  .sort(
+    (a, b) => b.data.date.localeCompare(a.data.date) || a.id.localeCompare(b.id)
+  )
+  .slice(0, 4);
+const noteEntries = await getCollection(
+  'notes',
+  ({ data }) => import.meta.env.DEV || !data.draft
+);
+const noteIndex = await buildNoteIndex(noteEntries);
+const recentNotes = noteIndex.notes.slice(0, 10);
 ---
 
-<!doctype html>
-<DefaultLayout title={SITE_TITLE} description={SITE_DESCRIPTION}>
-  <section class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 sm:py-16 md:py-20 lg:py-32">
-    <div class="grid grid-cols-12 gap-6">
-      <div class="col-span-12 md:col-span-7 lg:col-span-8 space-y-8">
-        <div class="space-y-6">
-          <div class="flex items-center gap-4">
-            <div class="w-12 h-px bg-foreground"></div>
-            <span class="text-xs uppercase tracking-widest text-muted-foreground">
-              Featured Article
-            </span>
-          </div>
-          
-          <h1 class="text-4xl md:text-5xl lg:text-6xl xl:text-7xl tracking-tight leading-[1.1]">
-            작은 개발자의<br />이야기
-          </h1>
-        </div>
-
-        <p class="text-lg md:text-xl text-muted-foreground max-w-2xl leading-relaxed">
-          경험과 배움을 기록하고 공유합니다
-        </p>
-
-        <div class="flex items-center gap-4">
-          <a 
-            href="/articles" 
-            class="inline-flex items-center gap-2 px-6 py-3 bg-foreground text-background hover:bg-foreground/90 transition-colors border border-foreground"
-          >
-            <span class="text-sm uppercase tracking-wide">모든 글 보기</span>
-            <ArrowRight className="w-4 h-4" />
-          </a>
-        </div>
-      </div>
-
-      <div class="col-span-12 md:col-span-5 lg:col-span-4 flex items-end">
-        <div class="w-full border-l border-border pl-6 space-y-4">
-          <p class="text-sm text-muted-foreground leading-relaxed">
-            지금까지의 생각과 경험을 이야기합니다.
-          </p>
-          <div class="flex items-center gap-2 text-sm text-muted-foreground">
-            <span>{articles.length}개의 글</span>
-          </div>
-        </div>
-      </div>
-    </div>
-  </section>
-
-    {/* Featured Post (if exists) */}
-    {featuredArticle && (
-      <section class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 border-y border-border">
-        <FeatureBlogIntroduceCard
-          client:visible
-          featuredPost={{
-            id: featuredArticle.id,
-            title: featuredArticle.data.title,
-            excerpt: featuredArticle.data.excerpt,
-            date: featuredArticle.data.date,
-            category: featuredArticle.data.category,
-            coverImage: featuredArticle.data.coverImage,
-          }}
-          href={`/articles/${featuredArticle.id}`}
-        />
-      </section>
-    )}
-
-      {/* Recent Posts */}
-  <section class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 sm:py-16 md:py-20">
-    <div class="flex items-center justify-between mb-8">
-      <div class="flex items-center gap-4">
-        <div class="w-12 h-px bg-foreground"></div>
-        <h2 class="text-3xl tracking-tight">최근 글</h2>
-      </div>
-      <a 
-        href="/articles" 
-        class="text-sm hover:text-foreground transition-colors flex items-center gap-2 text-muted-foreground"
-      >
-        <span>View All</span>
-        <ArrowRight className="w-4 h-4" />
-      </a>
-    </div>
-
-    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-      {recentArticles.map((article, index) => (
-        <a href={`/articles/${article.id}`}>
-          <BlogCard
-            client:visible
-            index={index}
-            post={{
-              id: article.id,
-              title: article.data.title,
-              excerpt: article.data.excerpt,
-              coverImage: article.data.coverImage,
-              date: article.data.date,
-              category: article.data.category,
-              readTime: article.data.readTime,
-              featured: article.data.featured,
-            }}
-            href={`/articles/${article.id}`}
-          />
-        </a>
-      ))}
-    </div>
-  </section>
-
-    {/* Categories Section */}
-    <section class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 sm:py-16 border-t border-border">
-      <div class="flex items-center gap-4 mb-8">
-        <div class="w-12 h-px bg-foreground"></div>
-        <h2 class="text-3xl tracking-tight">카테고리</h2>
-      </div>
-  
-      <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
-        {[...new Set(articles.map(article => article.data.category))].map((category) => {
-          const count = articles.filter(article => article.data.category === category).length;
-          return (
-            <a
-              href={`/articles?category=${category}`}
-              class="p-6 border border-border hover:border-foreground transition-colors"
-            >
-              <div class="space-y-2">
-                <h3 class="text-lg tracking-tight">{category}</h3>
-                <p class="text-sm text-muted-foreground">{count}개의 글</p>
-              </div>
-            </a>
-          );
-        })}
-      </div>
-    </section>
+<DefaultLayout title={SITE_TITLE} description={SITE_DESCRIPTION} currentPage="">
+  <main class="home-shell">
+    <HomeIntro />
+    <HomeArticleGallery articles={recentArticles} />
+    <HomeNoteSlider notes={recentNotes} />
+  </main>
 </DefaultLayout>
+
+<script>
+  const reveal = document.querySelectorAll<HTMLElement>(
+    '.home-reveal, .home-article-media'
+  );
+  if (
+    reveal.length &&
+    !matchMedia('(prefers-reduced-motion: reduce)').matches &&
+    'IntersectionObserver' in window
+  ) {
+    document.documentElement.classList.add('home-has-motion');
+    const observer = new IntersectionObserver(
+      (entries) => {
+        for (const entry of entries) {
+          if (!entry.isIntersecting) continue;
+          entry.target.classList.add('is-visible');
+          observer.unobserve(entry.target);
+        }
+      },
+      { rootMargin: '0px 0px -8% 0px' }
+    );
+    reveal.forEach((element) => observer.observe(element));
+  }
+  document
+    .querySelectorAll<HTMLImageElement>('.home-article-media img')
+    .forEach((image) => {
+      const fail = () => image.parentElement?.classList.add('is-failed');
+      image.addEventListener('error', fail, { once: true });
+      if (image.complete && !image.naturalWidth) fail();
+    });
+</script>

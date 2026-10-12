@@ -8,7 +8,6 @@ export interface BlogPost {
   category: string;
   coverImage?: ImageMetadata;
   readTime?: string;
-  featured?: boolean;
 }
 
 export interface BlogCardProps {

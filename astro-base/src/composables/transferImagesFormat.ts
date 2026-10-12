@@ -24,6 +24,7 @@ export const transferImagesFormat = async (
           ...article,
           data: {
             ...article.data,
+            unsplashCover: undefined,
             coverImage: {
               src: image.src,
               width: image.rawOptions.width,
@@ -32,9 +33,19 @@ export const transferImagesFormat = async (
             },
           } as InferEntrySchema<'articles'>,
         };
-      } else {
-        return article;
       }
+      if (article.data.unsplashCover) {
+        const { src, width, height } = article.data.unsplashCover;
+        // Unsplash API photos must retain their CDN hotlink and attribution.
+        return {
+          ...article,
+          data: {
+            ...article.data,
+            coverImage: { src, width, height, format: 'jpg' as const },
+          },
+        };
+      }
+      return article;
     })
   );
 };

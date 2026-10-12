@@ -1,3 +1,4 @@
+import UnsplashCredit from './UnsplashCredit';
 import { BlogCard } from '@/components/react/BlogCard';
 import type { ArticleCardSectionProps } from '@/components/react/interface';
 
@@ -7,22 +8,24 @@ const ArticleCardSection = ({ filteredArticles }: ArticleCardSectionProps) => {
       {filteredArticles.length > 0 ? (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {filteredArticles.map((article, index) => (
-            <a key={article.id} href={`/articles/${article.id}`}>
-              <BlogCard
-                index={index}
-                post={{
-                  id: article.id,
-                  title: article.data.title,
-                  excerpt: article.data.excerpt,
-                  coverImage: article.data.coverImage,
-                  date: article.data.date,
-                  category: article.data.category,
-                  readTime: article.data.readTime,
-                  featured: article.data.featured,
-                }}
-                href={`/articles/${article.id}`}
-              />
-            </a>
+            <div key={article.id}>
+              <a href={`/articles/${article.id}`}>
+                <BlogCard
+                  index={index}
+                  post={{
+                    id: article.id,
+                    title: article.data.title,
+                    excerpt: article.data.excerpt,
+                    coverImage: article.data.coverImage,
+                    date: article.data.date,
+                    category: article.data.category,
+                    readTime: article.data.readTime,
+                  }}
+                  href={`/articles/${article.id}`}
+                />
+              </a>
+              <UnsplashCredit cover={article.data.unsplashCover} />
+            </div>
           ))}
         </div>
       ) : (

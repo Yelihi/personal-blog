@@ -1,0 +1,18 @@
+{
+  "extends": "./tsconfig.json",
+  "include": [
+    ".astro/types.d.ts",
+    "src/components/react/notes/**/*",
+    "src/composables/buildNoteIndex.ts",
+    "src/components/react/Header.tsx",
+    "src/content.config.ts",
+    "src/composables/transferImagesFormat.ts",
+    "src/components/react/UnsplashCredit.tsx",
+    "src/components/react/ArticleCardSection.tsx"
+  ],
+  "exclude": ["dist", ".notes-test"],
+  "compilerOptions": {
+    "skipLibCheck": true,
+    "checkJs": false
+  }
+}
