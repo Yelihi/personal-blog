@@ -87,6 +87,31 @@ export default function EmptyNoteLottie({
           strokeWidth="1.4"
           strokeLinecap="round"
         />
+        <path
+          d="m39 175 118 8 123-8m-13-127v18l15-2"
+          stroke="currentColor"
+          strokeOpacity=".45"
+          strokeWidth="1.2"
+          strokeLinejoin="round"
+        />
+        <path
+          d="m57 73 29 1m95 0 36-2m32 122 42-17"
+          stroke="currentColor"
+          strokeWidth="1.8"
+          strokeLinecap="round"
+        />
+        <path
+          d="m231 50v33l6-6 6 6V49"
+          stroke="var(--note-accent)"
+          strokeWidth="1.8"
+          strokeLinejoin="round"
+        />
+        <path
+          d="m249 194-6 4 4-7"
+          stroke="currentColor"
+          strokeOpacity=".55"
+          strokeWidth="1.2"
+        />
       </svg>
       <div className="empty-note-art-player" ref={containerRef} />
     </div>

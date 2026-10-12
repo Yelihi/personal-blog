@@ -55,9 +55,16 @@ try {
   const staticPage = await staticContext.newPage();
   await staticPage.goto(production.origin);
   assert.equal(await staticPage.locator('.home-article').count(), 4);
-  assert.equal(await staticPage.locator('.home-note-card').count(), 0);
-  assert.equal(await staticPage.locator('#home-notes-empty').isVisible(), true);
-  assert.equal(await staticPage.locator('#home-note-controls').count(), 0);
+  assert.equal(await staticPage.locator('.home-note-card').count(), 1);
+  assert.equal(await staticPage.locator('#home-notes-empty').count(), 0);
+  assert.equal(
+    await staticPage.locator('.home-note-card a').getAttribute('href'),
+    '/notes/first-diary/'
+  );
+  assert.equal(
+    await staticPage.locator('#home-note-controls').isVisible(),
+    false
+  );
   assert.equal(
     (await staticPage.locator('a[href="/notes/"]').count()) > 0,
     true
@@ -172,26 +179,16 @@ try {
   );
   await motionPage.close();
 
-  const emptyNotesPage = await browser.newPage();
-  await emptyNotesPage.goto(`${production.origin}/notes/`);
-  await emptyNotesPage.waitForSelector(
-    '.empty-note-art[data-ready="true"] .empty-note-art-player svg'
-  );
+  const publishedNotePage = await browser.newPage();
+  await publishedNotePage.goto(`${production.origin}/notes/`);
+  assert.equal(await publishedNotePage.locator('.note-entry').count(), 1);
+  await publishedNotePage.locator('.note-entry a').first().click();
+  await publishedNotePage.waitForURL('**/notes/first-diary/');
   assert.equal(
-    await emptyNotesPage.locator('.empty-note-art[data-ready="true"]').count(),
-    2
+    await publishedNotePage.locator('.note-detail h1').textContent(),
+    '블로그를 이전하기까지'
   );
-  await emptyNotesPage.emulateMedia({ reducedMotion: 'reduce' });
-  await emptyNotesPage.reload();
-  assert.equal(
-    await emptyNotesPage.locator('.empty-note-art[data-ready="true"]').count(),
-    0
-  );
-  assert.equal(
-    await emptyNotesPage.locator('.empty-note-art-fallback').count(),
-    2
-  );
-  await emptyNotesPage.close();
+  await publishedNotePage.close();
 
   const context = await browser.newContext({
     viewport: { width: 1440, height: 900 },

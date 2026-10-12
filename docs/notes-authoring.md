@@ -5,6 +5,7 @@
 ## 새 노트
 
 `astro-base/src/content/notes/my-thought/index.mdx`와 대표 사진을 같은 폴더에 저장합니다. 폴더명에는 영문 소문자, 숫자, 하이픈을 사용합니다. 날짜는 따옴표로 감싼 `YYYY-MM-DD`입니다.
+실제 게시 예시는 [`src/content/notes/first-diary/index.mdx`](../astro-base/src/content/notes/first-diary/index.mdx)이며 주소는 `/notes/first-diary/`입니다.
 
 ```mdx
 ---
@@ -48,9 +49,9 @@ API 응답의 `images.unsplash.com` URL과 ixid를 유지하며, 사진 아래�
 
 ## Cloudflare 주소
 
-빌드 환경의 `SITE_URL`이 우선이며, 없으면 Cloudflare Pages가 제공하는 `CF_PAGES_URL`을 사용합니다. 둘 다 없으면 로컬 주소 `http://localhost:4321`을 사용합니다. canonical, OG, sitemap이 같은 origin을 사용합니다.
+빌드 환경의 `SITE_URL`이 우선입니다. 없으면 Cloudflare Pages의 `main` 빌드는 `https://yelihi.pages.dev`, 다른 배포는 `CF_PAGES_URL`을 사용합니다. 둘 다 없으면 로컬 주소 `http://localhost:4321`을 사용합니다. canonical, OG, sitemap이 같은 origin을 사용합니다.
 
-배포별 preview 주소 대신 고정된 검색 주소를 쓰려면 Cloudflare 빌드 환경변수 `SITE_URL`에 실제 운영 주소(예: `https://my-blog.pages.dev`)를 설정하세요. 경로나 쿼리 없이 origin만 입력합니다. `.env.example`은 설정 예시이며 `.env`의 `SITE_URL`은 CLI 실행 환경으로 내보내거나 Cloudflare 환경변수로 설정합니다.
+운영 도메인을 바꾸면 Cloudflare 빌드 환경변수 `SITE_URL`에 새 주소를 설정하세요. 경로나 쿼리 없이 origin만 입력합니다. `.env.example`은 설정 예시이며 `.env`의 `SITE_URL`은 CLI 실행 환경으로 내보내거나 Cloudflare 환경변수로 설정합니다.
 
 ## 확인 명령
 
