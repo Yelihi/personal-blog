@@ -1,5 +1,6 @@
 import type { NoteImage, NoteSummary } from './interface';
 import NoteCover from './NoteCover';
+import EmptyNoteLottie from './EmptyNoteLottie';
 export default function NotePreview({
   note,
   fallback,
@@ -20,10 +21,8 @@ export default function NotePreview({
           <span>미리보기</span>
         </div>
         <div className="note-preview-empty-content">
-          <div className="note-preview-empty-paper" aria-hidden="true">
-            <span />
-            <span />
-            <span />
+          <div className="note-preview-empty-paper">
+            <EmptyNoteLottie variant="preview" />
           </div>
           <h2>생각을 펼쳐 볼 자리</h2>
           <p>

@@ -2,6 +2,7 @@ import { useRef } from 'react';
 import type { NoteIndex } from './interface';
 import NoteTimeline from './NoteTimeline';
 import NotePreview from './NotePreview';
+import EmptyNoteLottie from './EmptyNoteLottie';
 import { useNoteTimeline } from './useNoteTimeline';
 export default function NotesExplorer({ index }: { index: NoteIndex }) {
   const scrollRef = useRef<HTMLDivElement>(null);
@@ -31,7 +32,7 @@ export default function NotesExplorer({ index }: { index: NoteIndex }) {
         >
           {isEmpty ? (
             <div className="notes-empty">
-              <span className="note-empty-mark" aria-hidden="true" />
+              <EmptyNoteLottie variant="mark" />
               <p className="note-empty-kicker">아직 쓰이지 않은 페이지</p>
               <h2>아직 기록된 노트가 없어요.</h2>
               <p>

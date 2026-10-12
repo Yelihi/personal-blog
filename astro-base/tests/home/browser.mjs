@@ -109,6 +109,21 @@ try {
       `First image animation missed on visit ${visit + 1}`
     );
   }
+  await motionPage
+    .locator('.home-article-slot')
+    .nth(1)
+    .scrollIntoViewIfNeeded();
+  await motionPage.waitForFunction(
+    () => document.querySelectorAll('.home-article-slot.is-visible').length >= 2
+  );
+  const [firstDelay, secondDelay] = await motionPage
+    .locator('.home-article-slot')
+    .evaluateAll((slots) =>
+      slots
+        .slice(0, 2)
+        .map((slot) => parseFloat(getComputedStyle(slot).animationDelay))
+    );
+  assert.ok(secondDelay > firstDelay, 'Article cards must enter in order');
   await motionPage.locator('.home-article a').first().hover();
   await motionPage.waitForTimeout(750);
   assert.ok(
@@ -156,6 +171,27 @@ try {
     'none'
   );
   await motionPage.close();
+
+  const emptyNotesPage = await browser.newPage();
+  await emptyNotesPage.goto(`${production.origin}/notes/`);
+  await emptyNotesPage.waitForSelector(
+    '.empty-note-art[data-ready="true"] .empty-note-art-player svg'
+  );
+  assert.equal(
+    await emptyNotesPage.locator('.empty-note-art[data-ready="true"]').count(),
+    2
+  );
+  await emptyNotesPage.emulateMedia({ reducedMotion: 'reduce' });
+  await emptyNotesPage.reload();
+  assert.equal(
+    await emptyNotesPage.locator('.empty-note-art[data-ready="true"]').count(),
+    0
+  );
+  assert.equal(
+    await emptyNotesPage.locator('.empty-note-art-fallback').count(),
+    2
+  );
+  await emptyNotesPage.close();
 
   const context = await browser.newContext({
     viewport: { width: 1440, height: 900 },

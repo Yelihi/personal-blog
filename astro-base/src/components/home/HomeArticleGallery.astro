@@ -23,7 +23,10 @@ const { articles } = Astro.props;
         {articles.map((article, index) => {
           const cover = article.data.coverImage;
           return (
-            <div class="home-article-slot">
+            <div
+              class="home-article-slot"
+              style={`--home-article-order: ${index}`}
+            >
               <article class="home-article">
                 <a href={`/articles/${article.id}`}>
                   <span
