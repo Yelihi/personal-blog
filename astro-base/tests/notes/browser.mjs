@@ -31,12 +31,12 @@ const notes = path.join(fixture, 'src/content/notes');
 await rm(notes, { recursive: true, force: true });
 await mkdir(notes, { recursive: true });
 for (const [i, name] of [
-  'example-thinking/cover.png',
-  'example-ai/cover.png',
-  'example-slow/cover.jpg',
+  'articles/errors/npm-ci/image1.png',
+  'articles/errors/tailscale-device-tag/image1.png',
+  'notes/2026-10-16/cover.jpg',
 ].entries()) {
   await cp(
-    path.join(app, 'src/content/notes', name),
+    path.join(app, 'src/content', name),
     path.join(notes, `cover-${i}${path.extname(name)}`)
   );
 }

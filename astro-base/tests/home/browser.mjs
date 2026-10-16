@@ -55,11 +55,11 @@ try {
   const staticPage = await staticContext.newPage();
   await staticPage.goto(production.origin);
   assert.equal(await staticPage.locator('.home-article').count(), 4);
-  assert.equal(await staticPage.locator('.home-note-card').count(), 1);
+  assert.equal(await staticPage.locator('.home-note-card').count(), 2);
   assert.equal(await staticPage.locator('#home-notes-empty').count(), 0);
   assert.equal(
-    await staticPage.locator('.home-note-card a').getAttribute('href'),
-    '/notes/first-diary/'
+    await staticPage.locator('.home-note-card a').first().getAttribute('href'),
+    '/notes/2026-10-16/'
   );
   assert.equal(
     await staticPage.locator('#home-note-controls').isVisible(),
@@ -181,12 +181,19 @@ try {
 
   const publishedNotePage = await browser.newPage();
   await publishedNotePage.goto(`${production.origin}/notes/`);
-  assert.equal(await publishedNotePage.locator('.note-entry').count(), 1);
+  assert.equal(await publishedNotePage.locator('.note-entry').count(), 2);
   await publishedNotePage.locator('.note-entry a').first().click();
-  await publishedNotePage.waitForURL('**/notes/first-diary/');
+  await publishedNotePage.waitForURL('**/notes/2026-10-16/');
   assert.equal(
     await publishedNotePage.locator('.note-detail h1').textContent(),
-    '블로그를 이전하기까지'
+    'if Kakao를 보면서 스쳐간 생각들'
+  );
+  assert.equal(
+    await publishedNotePage
+      .locator('.note-detail img')
+      .first()
+      .getAttribute('alt'),
+    '건물 외벽에 걸린 if(kakao)26 행사 현수막'
   );
   await publishedNotePage.close();
 
