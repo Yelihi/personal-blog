@@ -28,7 +28,7 @@ export default function NotesExplorer({ index }: { index: NoteIndex }) {
           className="note-scroll"
           ref={scrollRef}
           tabIndex={isEmpty ? undefined : 0}
-          aria-label="시간순 노트 스크롤"
+          aria-label="최신순 노트 스크롤"
         >
           {isEmpty ? (
             <div className="notes-empty">

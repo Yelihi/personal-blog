@@ -242,7 +242,7 @@
   flex-shrink: 0;
 }
 .note-preview > .note-cover {
-  max-height: calc(34dvh + 24px);
+  max-height: calc(56dvh + 24px);
   min-height: 0;
   flex: 1;
   display: flex;
@@ -255,7 +255,7 @@
 }
 .note-preview .note-image-frame {
   height: 100%;
-  max-height: 34dvh;
+  max-height: 56dvh;
 }
 .note-preview .note-credit {
   flex-shrink: 0;

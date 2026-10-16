@@ -19,7 +19,7 @@ export default function NoteTimeline({
   onNoteFocus,
 }: Props) {
   return (
-    <ol ref={listRef} className="note-entries" aria-label="시간순 생각 노트">
+    <ol ref={listRef} className="note-entries" aria-label="최신순 생각 노트">
       {index.notes.slice(0, revealedCount).map((note, i) => {
         const [x, w, mx, mw] = PATTERNS[i % PATTERNS.length];
         return (

@@ -112,6 +112,7 @@ export function useNoteTimeline(
       scrollTo(firstCenter() + i * SLOT - marker());
       schedule();
     };
+    if (!snapshot) scrollTo(0);
     const restore = (p: NoteReturnPosition, keepAnchor = false) => {
       const i = index.notes.findIndex((n) => n.id === p.selectedId);
       selected.current = Math.max(0, i);

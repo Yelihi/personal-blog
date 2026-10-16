@@ -274,6 +274,8 @@ try {
   await page.goto(`${origin}/notes/`);
   await enhanced(page);
   assert.equal(await page.locator('.note-entry').count(), 10);
+  assert.equal(await selected(page), 'test-00');
+  assert.equal(await desktopTop(page), 0);
   const fullHeight = await page
     .locator('.note-scroll')
     .evaluate((el) => el.scrollHeight);
@@ -294,6 +296,10 @@ try {
   await page
     .locator('.note-preview .note-image-frame[data-image-state=ready]')
     .waitFor();
+  const previewRatio = await page
+    .locator('.note-preview .note-image-frame')
+    .evaluate((el) => el.clientWidth / el.clientHeight);
+  assert.ok(previewRatio < 1.8, `Preview image is too flat: ${previewRatio}`);
   await page.screenshot({
     animations: 'disabled',
     path: path.join(artifacts, 'desktop.png'),
@@ -422,9 +428,17 @@ try {
   assert.ok(
     await page.locator('html').evaluate((el) => el.classList.contains('dark'))
   );
+  await page.locator('.note-selected-label a').click();
+  await page.getByRole('link', { name: 'Notes', exact: true }).click();
+  await enhanced(page);
+  await waitFor(
+    async () => (await selected(page)) === 'test-00',
+    'fresh Notes entry starts at newest'
+  );
+  assert.equal(await page.evaluate(() => scrollY), 0);
   assert.deepEqual(errors, []);
   report.push(
-    'batch denominator, 100%, reverse, keyboard, desktop/mobile anchor, mobile Back, 320px, dark and reduced motion passed'
+    'newest-first entry, taller preview, batch denominator, 100%, reverse, keyboard, desktop/mobile anchor, mobile Back, 320px, dark and reduced motion passed'
   );
   await context.close();
 
