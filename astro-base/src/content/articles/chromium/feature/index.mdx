@@ -1,0 +1,269 @@
+---
+title: 'Chromium 웹 기능은 어떻게 사용자에게 도달할까'
+excerpt: '두 가지 표준 구현 사례로 살펴보는 Chromium 코드 변경, 웹 플랫폼 출시 검토, 버전 반영과 실제 배포의 차이'
+date: '2026.10.17'
+category: 'Chromium'
+coverImage: './image1.png'
+readTime: '35 min read'
+tags: ['Chromium', 'Blink', 'Web Platform']
+---
+
+Chromium에 코드를 병합하면 새 기능이 곧바로 사용자에게 갈까? 웹 플랫폼 변경에서는 그렇지 않다. 코드를 구현하고, 새 동작을 기본으로 켜고, 목표 버전의 코드에 포함시키고, 실제 브라우저에서 제공되는지 확인하는 일은 각각 다른 단계다.
+
+이 글에서는 **XML MIME 판별**과 **Service Worker의 ProgressEvent 노출**이라는 두 사례를 따라가며 그 사이에 어떤 검토와 증거가 필요한지 정리한다. 둘 다 새 API를 설계한 작업이 아니라 이미 합의된 표준을 Chromium이 따라가는 변경이다. 작은 코드 수정이어도 웹 개발자가 관찰하는 동작이 달라지면 출시 절차가 필요하다는 점이 핵심이다.
+
+## 코드를 고치는 것과 사용자에게 제공하는 것은 다르다
+
+### Chromium, Chrome, Blink
+
+**Chromium**은 브라우저를 만드는 오픈소스 프로젝트, **Chrome**은 이를 기반으로 사용자에게 배포되는 제품이다. **Blink**는 Chromium 안에서 웹 페이지를 처리하고 여러 웹 API를 구현하는 엔진이다.
+
+웹 개발자가 JavaScript로 API를 호출하면 Blink의 구현과 설정에 따라 결과가 달라진다. 예를 들어 다음 코드가 어떤 환경에서는 `"undefined"`, 변경 후에는 `"function"`을 반환할 수 있다.
+
+```js
+typeof ProgressEvent;
+```
+
+화면에 새 버튼이 나타나지 않아도 웹 코드가 관찰할 수 있는 동작이 바뀌었다. 이를 **웹 노출 변화(web-exposed change)**라고 한다. 새 API뿐 아니라 기존 API의 반환값 변화나 다른 실행 환경으로의 노출 확대도 웹 플랫폼의 feature다. 구현자가 bugfix라고 부르더라도 웹 코드가 의존하는 동작이 바뀌는지는 별도로 판단한다. [웹 노출 변화의 정의](https://www.chromium.org/blink/guidelines/web-exposed/)
+
+### 사용자에게 도달하기까지
+
+| 상태                    | 의미                                       | 아직 알 수 없는 것          |
+| ----------------------- | ------------------------------------------ | --------------------------- |
+| 코드 작성               | 개발자의 작업 공간에 구현과 테스트가 있음  | 저장소에 받아들여졌는가     |
+| 리뷰 후 병합            | 검토한 변경이 Chromium 저장소에 들어감     | 새 동작이 기본으로 켜졌는가 |
+| 기본 활성화             | 별도 실험 설정 없이 새 코드 경로를 사용    | 어느 제품 버전에 포함됐는가 |
+| 대상 버전의 코드에 포함 | 해당 버전으로 나갈 코드에 변경이 있음      | 사용자에게 실제 배포됐는가  |
+| 실제 배포와 실행 확인   | 특정 플랫폼·채널·버전에서 기능 제공을 확인 | 다른 환경도 같은 상태인가   |
+
+개발 중에는 **runtime feature flag** 뒤에 새 동작을 두고 기본값을 끌 수 있다. 검증과 승인을 마친 다음 기본값을 바꾸는 방식이다. 코드 설정의 `experimental`과 `stable`은 활성화 조건이며, 제품 배포 계열인 Chrome **Stable 채널**과는 다르다. 코드에 `stable`이라고 적혀 있어도 Stable 사용자에게 이미 배포됐다는 뜻은 아니다. 플랫폼별 설정과 덮어쓰기도 살펴야 한다. [Runtime Enabled Features](https://chromium.googlesource.com/chromium/src/+/main/third_party/blink/renderer/platform/RuntimeEnabledFeatures.md)
+
+## 두 변경의 실제 전후 동작
+
+### XML MIME 판별
+
+서버는 `Content-Type`으로 응답의 형식을 알린다. `text/example+xml`에서 `/` 앞은 최상위 타입이고 뒤는 subtype이다. XML MIME 규칙은 `text/xml`, `application/xml`뿐 아니라 **유효한 subtype이 `+xml`로 끝나는 MIME**도 XML로 분류한다.
+
+Chromium의 공통 함수 `blink::IsXMLMimeType`는 일반적인 `+xml` 판별을 `application/*`에 한정하고 있었다. 변경은 `text/example+xml`처럼 다른 최상위 타입을 가진 유효한 MIME까지 XML로 분류하도록 맞춘 것이다. [XML MIME 명세](https://mimesniff.spec.whatwg.org/#xml-mime-type), [구현 변경](https://chromium-review.googlesource.com/c/chromium/src/+/8301932)
+
+웹에서 이를 볼 수 있는 곳 중 하나가 **Resource Timing**의 `contentType`이다.
+
+```js
+// 요청한 리소스에 대한 Resource Timing 기록을 얻은 뒤
+entry.contentType;
+```
+
+이 값은 응답의 HTTP 헤더를 그대로 복사하지 않는다. **MIME 최소화 알고리즘**을 거치므로 새로 XML로 인식한 `text/example+xml` 등은 기능을 켰을 때 `application/xml`로 나타난다. 응답 헤더나 본문 자체를 고치는 변경은 아니다. `image/svg+xml`은 알고리즘에서 먼저 별도 처리하므로 Resource Timing의 관측값이 유지된다. [MIME 최소화 알고리즘](https://mimesniff.spec.whatwg.org/#minimize-a-supported-mime-type)
+
+변경 전에도 Chrome은 XML을 처리했다. 문제는 특정 공통 함수의 분류 범위였으며 XML 파싱 전체를 새로 구현하거나 별도의 `MIMETypeRegistry::IsXMLMIMEType`까지 통합한 작업이 아니다.
+
+### Service Worker의 ProgressEvent
+
+**Service Worker**는 페이지의 `window`와 다른 전역 환경에서 실행된다. 페이지에서 쓸 수 있는 API가 모두 그곳에 존재하는 것은 아니다. 진행 정보를 담는 **ProgressEvent**는 이미 구현돼 있었지만 Blink의 Service Worker 전역에는 생성자가 노출되지 않았다. 표준이 요구하는 Worker 노출에 맞춰 이를 사용할 수 있게 한 것이 두 번째 변경이다. [ProgressEvent 명세](https://xhr.spec.whatwg.org/#interface-progressevent), [구현 변경](https://chromium-review.googlesource.com/c/chromium/src/+/8425503)
+
+```js
+// Service Worker 전역에서 변경 전: "undefined", 새 노출을 켠 뒤: "function"
+typeof ProgressEvent;
+
+const event = new ProgressEvent('progress', {
+  lengthComputable: true,
+  loaded: 5,
+  total: 10,
+});
+
+// event.loaded === 5, event.total === 10
+```
+
+Service Worker에 XMLHttpRequest 전체를 추가하거나 `fetch()`가 자동으로 진행 이벤트를 발생시키는 변경은 아니다. 생성자와 기존 속성을 노출한다. 두 사례 모두 ChromeStatus에서는 **Chromium catches up** 유형으로 등록됐다. [XML 기록](https://chromestatus.com/feature/5092584283308032), [ProgressEvent 기록](https://chromestatus.com/feature/5069584943153152)
+
+## 코드 검토와 출시 검토를 연결하는 도구
+
+### 코드가 오가는 곳
+
+**CL(Change List)**은 검토를 위해 올린 코드 변경 묶음이다. Chromium은 **Gerrit**에서 구현과 테스트를 검토하고 CL을 병합한다. **CQ(Commit Queue)**는 제출 전 빌드·테스트와 제출 조건을 처리하는 자동화로, 사람이 설계와 정확성을 읽는 리뷰와 역할이 다르다. `Commit-Queue +1`은 검사를 실행하지만 제출하지 않는 dry run, `+2`는 검증을 거치는 제출 요청이다. +2는 두 번째 사람의 승인이 아니다. [기여와 CQ 안내](https://chromium.googlesource.com/chromium/src/+/main/docs/contributing.md), [코드 리뷰 정책](https://chromium.googlesource.com/chromium/src/+/main/docs/code_reviews.md)
+
+### 출시 근거가 모이는 곳
+
+**ChromeStatus**는 기능의 설명·담당자·표준·위험·테스트·목표 버전과 검토 상태를 모은다. 개별 기록을 **feature entry**라고 한다. Entry를 만들어도 코드나 runtime flag가 자동 생성되지는 않는다.
+
+**blink-dev**는 Blink의 웹 플랫폼 변경을 공개적으로 논의하는 메일링 리스트다. 이곳에 올리는 **Intent**는 목적에 따라 나뉜다.
+
+- **Intent to Prototype(ITP)**: 구현을 시작하겠다는 계획
+- **Intent to Experiment(I2E)**: 제한된 실험의 목적과 방법
+- **Intent to Ship(ITS)**: 새 동작을 기본 제공하겠다는 출시 제안
+
+**Blink API owners**는 웹 플랫폼 변경의 출시에 동의할지 판단한다. 이들의 공개 **LGTM(Looks Good To Me)**과 Gerrit의 코드 승인은 서로 대신하지 못한다. ChromeStatus의 근거, blink-dev의 논의와 승인, Gerrit의 구현과 테스트를 연결해야 어느 동작을 승인했고 어느 코드가 이를 구현하는지 추적할 수 있다. [API-owner 절차](https://www.chromium.org/blink/guidelines/api-owners/procedures/)
+
+## 변경의 종류에 따라 시작 경로를 고른다
+
+### 새 설계인가, 기존 합의의 구현인가
+
+**명세(specification)**는 API 이름만 나열하는 문서가 아니라 입력·출력·오류·처리 순서 등을 정의한다. **Incubation**은 문제와 대안을 공개적으로 논의하며 설계를 다듬는 단계다. [설계 설명과 공개 논의](https://www.chromium.org/blink/guidelines/web-platform-changes-guidelines/)
+
+새 API나 기존 API의 새 동작을 설계한다면 **New feature incubation**, 합의된 명세·WHATWG 반영·다른 엔진 구현에 근거한다면 **기존 표준 구현** 경로를 검토한다. 코드의 크기보다 이미 합의된 동작을 구현하는지가 분류 기준이다. [공식 변경 유형](https://www.chromium.org/blink/launching-features/#the-feature-types)
+
+| 변경 종류                       | 주된 흐름                                                                    |
+| ------------------------------- | ---------------------------------------------------------------------------- |
+| 새 설계·기존 API 확장           | 문제·대안 논의 → 프로토타입 → 개발자 시험과 설계 보완 → 출시 준비            |
+| 합의된 표준 구현                | 정확한 명세 확인 → 프로토타입 → 개발자 시험과 구현 보완 → 출시 준비          |
+| 기존 기능 제거                  | 사용 영향 파악 → 제거·이전 계획 승인 → 시험·안내 → 비활성화 → 관찰·코드 정리 |
+| 위험이 매우 낮은 기존 동작 변경 | 변경 동기 정리 → 필요시 개발자 시험 → 공개 공지와 제공                       |
+
+**Origin Trial**은 실사용 피드백이 필요할 때 선택한다. 모든 변경이 모든 단계를 거치는 것은 아니며, 기존 표준을 구현하다 새 설계가 필요해지면 분류와 공개 논의를 다시 확인한다. [ChromeStatus 경로 정의](https://github.com/GoogleChrome/chromium-dashboard/blob/46150ef300f3c15116084b1a000b85554700f4c7/internals/processes.py)
+
+### 간단한 공지나 면제
+
+**PSA(Public Service Announcement)**는 API 변화가 사소하고 사이트 파손 위험이 매우 낮으며 추가 플랫폼 지원에도 새 위험이 없을 때 사용하는 공지다. Bugfix 전체의 승인 생략 경로는 아니다. 실제 ProgressEvent 변경은 기존 표준 구현 경로로 검토됐다. [PSA 조건](https://www.chromium.org/blink/launching-features/#web-developer-facing-change-to-existing-behavior), [ProgressEvent 기록](https://chromestatus.com/feature/5069584943153152)
+
+**WebDriver**는 스크립트로 브라우저를 조작하는 API다. 면제 여부는 의미 있는 웹 API·WebDriver 동작 변화가 없는지로 판단하며, 불명확하면 `blink-api-owners-discuss@chromium.org`에 문의한다. [적용 범위](https://www.chromium.org/blink/launching-features/)
+
+## 기록을 만들고 플래그 뒤에서 구현한다
+
+### ChromeStatus에 무엇을 남길까
+
+공식 절차의 시작점은 변경 유형을 선택하고 ChromeStatus entry를 만드는 것이다. 실제 기여에서는 CL을 먼저 올렸다가 리뷰어의 요청으로 출시 절차를 연결할 수도 있다. 두 사례가 그랬다고 해서 CL을 먼저 올리는 것이 규칙은 아니다.
+
+Feature name과 Summary에는 실제로 바뀌는 동작을 쓰고 담당자·코드 영역·추적 이슈를 연결한다. 기존 표준 구현이라면 명세의 정확한 절을 링크한다. ChromeStatus의 숫자 ID와 웹 기능을 분류하는 **Web Feature ID**는 서로 다르다. [등록·필드 정의](https://github.com/GoogleChrome/chromium-dashboard/blob/46150ef300f3c15116084b1a000b85554700f4c7/client-src/elements/form-field-specs.ts)
+
+로그인 후 생성 권한이 없다면 `webstatus-request@google.com`으로 요청한다. 외부 계정에도 등록 경로가 있다. Feature owner는 책임 연락처, editor는 공동 편집자, CC는 알림 수신자다. Owner가 API-owner 출시 승인권을 뜻하지는 않는다. XML 기여자는 권한 요청 후 생성한 entry와 ITP를 공유했지만, 공개 댓글만으로 승인자나 일반 처리 시간을 알 수는 없다. [등록 안내](https://www.chromium.org/blink/launching-features/), [권한 구현](https://github.com/GoogleChrome/chromium-dashboard/blob/46150ef300f3c15116084b1a000b85554700f4c7/framework/permissions.py), [XML 권한 요청](https://github.com/OSSCA-chromium/contributions/issues/322#issuecomment-5458700794), [entry·ITP 공유](https://github.com/OSSCA-chromium/contributions/issues/322#issuecomment-5459098249)
+
+### 설계 설명과 ITP
+
+새 설계에는 문제·사용 사례·대안의 한계·API 예시를 담은 공개 **explainer**가 필요하다. 기존 표준 구현에서는 새 설계를 꾸미기보다 명세와 현재 동작의 차이를 설명한다. XML은 `+xml` 분류 범위, ProgressEvent는 Service Worker 노출 누락을 연결했다. [설계·명세 지침](https://www.chromium.org/blink/guidelines/web-platform-changes-guidelines/), [ITP 입력](https://github.com/GoogleChrome/chromium-dashboard/blob/46150ef300f3c15116084b1a000b85554700f4c7/internals/processes.py)
+
+ChromeStatus에서 ITP 초안을 만든 뒤 제목·설명·링크를 검토해 blink-dev에 게시하고 공개 스레드를 entry와 CL에 연결한다. UI의 **Post directly to blink-dev**는 초안 저장이 아니라 외부 공개 게시다. ITP에 API-owner LGTM은 필요하지 않지만 코드 리뷰와 테스트는 여전히 필요하다. [게시 UI](https://github.com/GoogleChrome/chromium-dashboard/blob/46150ef300f3c15116084b1a000b85554700f4c7/client-src/elements/chromedash-post-intent-dialog.ts), [승인 규칙](https://www.chromium.org/blink/guidelines/api-owners/procedures/)
+
+### 구현과 함께 검증하기
+
+플래그 뒤에서 구현하면서 바뀌는 동작뿐 아니라 유지할 동작과 잘못된 입력도 검사한다. Flag 이름을 등록하는 데서 그치지 않고 실제 실행 경로가 설정을 쓰는지 확인한다.
+
+XML의 초기 CL에는 flag와 C++ 테스트가 있었고, 리뷰 중 경계값과 Resource Timing 테스트를 보강했다. ProgressEvent의 초기 CL에는 flag, **WebIDL** 노출 선언, 생성자 테스트, Service Worker 인터페이스 목록 변경이 들어갔다. WebIDL은 인터페이스와 어느 전역에 노출할지를 기술한다. [XML 리뷰](https://chromium-review.googlesource.com/changes/8301932/comments), [ProgressEvent CL](https://chromium-review.googlesource.com/c/chromium/src/+/8425503)
+
+프로토타입을 다른 개발자가 시험할 수 있게 되면 설정 방법과 샘플을 제공한다. 이때 코드가 병합됐어도 기본 제공이 승인된 것은 아니다.
+
+## 개발자에게 시험하게 하고 근거를 보강한다
+
+### Dev Trials에서 알아볼 것
+
+**Dev Trials**는 개발자가 플래그를 켜서 기능을 써 보고 피드백하는 단계다. ChromeStatus의 **Ready for Developer Testing** 공지는 빌드·설정·예제와 피드백 경로를 알린다. 신기능은 API 형태가 문제를 해결하는지, 기존 표준 구현은 명세와 사용 환경에 맞는지 확인한다. 반복 가능한 시험 방법과 샘플을 남기고 문제를 해결하면 출시 가능성을 검토한다. [Dev Trials 단계 정의](https://github.com/GoogleChrome/chromium-dashboard/blob/46150ef300f3c15116084b1a000b85554700f4c7/internals/processes.py)
+
+로컬 테스트 실행과 Dev Trial 공지 게시를 혼동하지 말자. 두 사례의 공개 시험 기록만으로 모든 중간 공지를 수행했다고 추정할 수 없다.
+
+### WPT가 있어도 출시 판단은 남는다
+
+**WPT(Web Platform Tests)**는 여러 브라우저가 공유하는 표준 테스트다. API 존재, 입력·결과, 오류·경계값을 검사하고 엔진 간 차이를 찾는 데도 쓴다. [Chromium WPT 가이드](https://chromium.googlesource.com/chromium/src/+/HEAD/docs/testing/web_platform_tests.md)
+
+테스트 통과는 시험한 입력과 환경에서 기대 결과가 나왔다는 뜻이다. 여전히 다음 질문이 남는다.
+
+- 기존 사이트가 바뀌기 전 동작에 의존하는가?
+- 같은 공통 함수를 쓰는 다른 기능이 영향을 받는가?
+- 시험하지 않은 플랫폼이나 실행 환경은 무엇인가?
+- 문제가 생기면 새 동작을 끌 수 있는가?
+
+기존 사이트가 깨질 **호환성 위험**과 브라우저들이 같은 동작에 도달하지 못할 **상호운용성 위험**은 별도로 검토한다. WPT는 근거이지만 사용량·공유 호출자·복구 계획을 대신하지 않는다. 결과에는 코드 **SHA**, 플랫폼, flag 상태, 실행 전역을 함께 남겨야 나중에 어떤 상태를 검사했는지 알 수 있다. [Blink의 위험 판단](https://www.chromium.org/blink/guidelines/web-platform-changes-guidelines/)
+
+### XML에서 추가 실험을 한 이유
+
+XML의 추가 브라우저 비교는 초기 구현이 아니라 **10월 ITS 검토에서 나온 질문에 답하기 위한 작업**이었다. 기여자는 10월 9일 macOS의 Safari·Firefox·Chrome 배포 버전을 비교한 뒤, 브라우저 간 기존 차이와 이번 수정 효과를 분리하기 위해 같은 로컬 Chromium 빌드의 별도 프로필로 flag OFF·ON을 비교했다.
+
+동일 빌드에서 object 삽입, 직접 탐색, XHR의 XML 문서 처리와 문자 디코딩에는 시험한 입력 범위에서 차이를 관찰하지 못했다. 추가로 XML로 분류된 MIME의 Resource Timing `contentType`은 ON에서 `application/xml`로 바뀌었다. 이는 해당 환경의 관측이며 모든 사이트의 무회귀 보장이나 공식 WPT 전체 실행은 아니다. **전용 사용량 계측과 RUM(실제 사용자 환경 측정 자료)은 없었고, Actor를 실제로 실행하는 시험도 하지 않았다.** [공개 실험과 정정](https://groups.google.com/a/chromium.org/g/blink-dev/c/Vm74fbauWqw)
+
+ProgressEvent는 생성자와 속성이 어느 전역에서 보이는지에 맞춰 WPT를 확장했다. 수정한 Content Shell의 Service Worker에서 생성자·속성과 DevTools 자동완성을 확인한 기록도 있다. XML 실험을 ProgressEvent의 검증으로 가져올 수는 없다. [ProgressEvent 기록](https://chromestatus.com/feature/5069584943153152)
+
+## 출시할 만큼 준비됐는지 검토한다
+
+### 명세와 다른 브라우저의 의견
+
+완성된 명세가 구현과 일치하는지, 다른 엔진이 해석할 때 모호한 부분이 없는지 확인한다. **W3C TAG**는 웹 기술 설계를 검토한다. 초기 설계 검토는 권고이고, 완성된 명세에는 예외를 제외하고 검토 기회를 제공한다. 이미 검토한 설계와 중요한 차이가 없다면 기존 이슈에 명세가 준비됐음을 알릴 수 있다. 다른 엔진의 공식 의견은 ITS보다 적어도 한 달 전에 요청한다. [외부 검토 지침](https://www.chromium.org/blink/launching-features/wide-review/)
+
+다른 브라우저의 **standards position**에서 `Positive`는 설계 지지이지 특정 버전의 구현 완료가 아니다. `Shipped/Shipping`에는 제공 상태를 뒷받침할 근거가 필요하고, 답변이 없으면 `No signal`이다.
+
+XML에서는 다른 엔진에 XML 분류 코드가 있다는 것만으로 Resource Timing 값까지 일치한다고 볼 수 없었다. WebKit 측은 기존 지지 범위에 이번 MIME 최소화가 포함된다고 답했고, Mozilla의 범위 확인 답변은 기준일에 대기 중이었다. [WebKit 답변](https://github.com/WebKit/standards-positions/issues/88#issuecomment-6032223882), [XML entry](https://chromestatus.com/feature/5092584283308032)
+
+ProgressEvent는 Gecko와 WebKit의 릴리스 소스에서 ProgressEvent 선언과 ServiceWorkerGlobalScope 정의를 함께 확인했다. Worker 노출이 Service Worker 전역과 연결되는지 확인한 것이며, 모든 플랫폼의 실기 시험이나 최초 지원 버전 확인은 아니다. [Gecko ProgressEvent](https://hg.mozilla.org/releases/mozilla-release/raw-file/FIREFOX_140_0_RELEASE/dom/webidl/ProgressEvent.webidl), [Gecko ServiceWorkerGlobalScope](https://hg.mozilla.org/releases/mozilla-release/raw-file/FIREFOX_140_0_RELEASE/dom/webidl/ServiceWorkerGlobalScope.webidl), [WebKit ProgressEvent](https://github.com/apple-oss-distributions/WebKit/blob/WebKit-7614.1.25.0.30/Source/WebCore/dom/ProgressEvent.idl), [WebKit ServiceWorkerGlobalScope](https://github.com/apple-oss-distributions/WebKit/blob/WebKit-7614.1.25.0.30/Source/WebCore/workers/service/ServiceWorkerGlobalScope.idl)
+
+### 분야별 검토와 공유 코드의 영향
+
+ChromeStatus의 **gate**는 Privacy·Security·Testing 등 분야별 검토와 상태를 관리한다. 자료가 준비되는 대로 검토할 수 있으므로 모든 gate를 끝낸 뒤에만 ITS를 보내는 고정된 순서는 없다. 다만 미해결 질문을 완료로 표시할 수는 없다. `Approved`는 승인, `N/A`는 해당 없음, `N/A verified`는 그 판단을 검토자가 확인한 상태다. Testing의 N/A도 테스트 면제를 뜻하지 않는다. [gate 설명](https://groups.google.com/a/chromium.org/g/blink-dev/c/bqvB1oap0Yc/m/YlO8DEHgAQAJ)
+
+XML에서는 Chrome 내부 자동화 구성요소 **Actor**도 영향 범위였다. Actor는 바뀐 MIME 분류 함수를 위험한 응답 형식 검사에 사용했다. Resource Timing은 SVG를 먼저 별도 처리하지만 Actor는 helper를 직접 쓰므로 영향이 같다고 가정할 수 없었다. [Resource Timing 코드](https://chromium.googlesource.com/chromium/src/+/ea818755d49f1b089acc8aff889d55f61b92a3c3/third_party/blink/renderer/platform/network/http_parsers.cc#654), [Actor 코드](https://chromium.googlesource.com/chromium/src/+/ea818755d49f1b089acc8aff889d55f61b92a3c3/chrome/browser/actor/execution_engine.cc#318)
+
+공개 스레드에 공유된 담당자 답변은 이 검사가 구조화 데이터의 prompt injection을 통한 유출 위험을 줄이려는 것이라는 설명과 기본 활성화에 우려가 없다는 의견이었다. **Actor 런타임 시험은 없었고 이전 Security review가 이 상호작용까지 검토했는지도 미확인이다.** Object 경로가 해당 helper를 쓰지 않는다는 정정도 있었다. 담당자 의견, 코드 분석, 실행 시험은 다른 종류의 근거다. [Actor 논의](https://groups.google.com/a/chromium.org/g/blink-dev/c/Vm74fbauWqw)
+
+### 문서와 Adoption
+
+**Adoption** 검토는 웹 개발자가 새 동작과 지원 범위를 이해하고 사용할 준비를 다룬다. **MDN**은 개발자 참조 문서, **BCD**는 브라우저 호환성 데이터다. **Modern Web Guidance(MWG)**는 AI 코딩 에이전트를 위한 지침과 평가를 제공하는 별도 프로젝트다. [MDN ProgressEvent](https://developer.mozilla.org/en-US/docs/Web/API/ProgressEvent), [MWG 프로젝트](https://github.com/GoogleChrome/modern-web-guidance-src/blob/main/README.md)
+
+XML은 비-application `+xml` 예시와 호환성 설명, ProgressEvent는 Service Worker 지원과 확정 버전의 문서 검토를 요청했다. XML 문서 준비는 9월부터 진행됐다. 두 사례의 Adoption gate는 Approved였지만 **문서 요청, gate 승인, MDN·BCD 수정 완료, MWG 출간은 각각 다른 결과**다. 기준일에 XML MWG 요청은 not planned로 종료됐고 ProgressEvent 요청은 열려 있었다. 문서·BCD 수정이나 guidance 출간 완료는 확인하지 않았다. [XML MDN 요청](https://issuetracker.google.com/issues/566254394), [ProgressEvent MDN 요청](https://issuetracker.google.com/issues/565605607), [XML MWG](https://github.com/GoogleChrome/modern-web-guidance-src/issues/1548), [ProgressEvent MWG](https://github.com/GoogleChrome/modern-web-guidance-src/issues/1511)
+
+## 실사용에서 확인할 질문이 있으면 Origin Trial을 선택한다
+
+**Origin Trial**은 참여 사이트의 origin과 기능에 유효한 token으로 새 기능을 한시 제공하는 실험이다. 사이트 사용자는 개별 flag를 켜지 않고 기능을 접한다. 개발자가 자기 브라우저의 flag로 시험하는 Dev Trial과 달리, 실제 사용 환경에서 API 형태나 성능 효과를 확인할 질문이 있을 때 유용하다. 필수 단계는 아니다. [Origin Trial 개요](https://developer.chrome.com/docs/web-platform/origin-trials)
+
+실험에는 학습 목표, 사용 방법, 피드백 창구, 사용량 측정, 원격 비활성화 수단을 준비한다. I2E 승인을 받고 ChromeStatus에서 trial 생성을 요청한다. Privacy·Security 등 다른 검토도 적용되며 결과에 따라 보완·출시 준비·중단을 선택한다. 통상 시작·연장에 API owner 1명의 LGTM, 비표준 Origin Trial에 3명이 필요하다. 정식 반대가 없어야 하며 실험 승인은 출시 승인을 대신하지 않는다. [Origin Trial 운영](https://www.chromium.org/blink/origin-trials/running-an-origin-trial/), [API-owner 규칙](https://www.chromium.org/blink/guidelines/api-owners/procedures/)
+
+**Finch**는 서버 설정으로 Chrome의 feature 상태를 제어하며 실험 분할이나 문제가 생겼을 때의 **kill switch**에 쓴다. Flag 이름이 있다고 Finch 실험을 수행한 것은 아니다. XML의 로컬 OFF·ON 비교도 Origin Trial이나 Stable 사용자 대상 Finch 실험이 아니다. [Flag 지침](https://chromium.googlesource.com/chromium/src/+/main/docs/flag_guarding_guidelines.md)
+
+## 출시 제안을 승인받고 실제 코드에 반영한다
+
+### Prepare to Ship에서 맞춰야 할 것
+
+**Prepare to Ship**은 지금까지의 설계·구현·시험·검토를 최종 출시 범위와 맞추는 단계다. 어느 동작을 어느 플랫폼에 제공하는지, 명세와 테스트가 그 범위를 다루는지, 남은 우려를 어떻게 처리할지 설명할 수 있어야 한다.
+
+ITS는 ChromeStatus의 여러 단계에 저장한 정보를 합친다. Summary, 명세·브라우저 신호, 플랫폼·테스트, 문서·복구 계획을 다시 확인한다. 빈 필드나 기본값이 검토한 답처럼 출력되지 않게 한다. [단계별 폼](https://github.com/GoogleChrome/chromium-dashboard/blob/46150ef300f3c15116084b1a000b85554700f4c7/client-src/elements/form-definition.ts)
+
+**Milestone**은 목표 Chrome 주요 버전이다. M157이라는 계획은 그 버전의 출시 증거가 아니다. XML은 목표를 M157에서 M158로 바꿨고 문서 요청도 이에 맞췄다. [XML entry](https://chromestatus.com/feature/5092584283308032), [문서 요청](https://issuetracker.google.com/issues/566254394)
+
+### ITS는 공개 출시 검토다
+
+ITS를 blink-dev에 게시하면 API owners가 질문하거나 동의한다. 중요한 웹 API의 추가·변경·제거를 출시하려면 **서로 다른 API owners 3명의 LGTM과 정식 반대가 없는 상태**가 필요하다. 이는 모든 CL에 세 명의 코드 리뷰어가 필요하다는 뜻이 아니다. [승인 규칙](https://www.chromium.org/blink/guidelines/api-owners/procedures/)
+
+질문이 추가 실험으로 이어지기도 한다. XML에서는 기존 사이트의 사용량, 다른 호출자, MIME 최소화, 비교 실험, 복구 가능성을 확인해 entry·공개 답변·코드 근거에 연결했다. ProgressEvent가 같은 논쟁을 겪었다고 볼 근거는 없다. 기본 활성화 CL에는 blink-dev 승인 스레드를 연결한다. [XML ITS](https://groups.google.com/a/chromium.org/g/blink-dev/c/Vm74fbauWqw), [ProgressEvent ITS](https://groups.google.com/a/chromium.org/g/blink-dev/c/xfESpbOdURw), [기본 활성화 절차](https://www.chromium.org/blink/launching-features/)
+
+### 두 사례의 다른 병합 순서
+
+XML 구현 CL은 9월 4일 UTC에 `experimental` 설정으로 병합됐다. 이후 ITS 검토와 실험을 거쳐 10월 14일 15:18:19 UTC(한국시간 10월 15일 00:18:19)에 세 번째 LGTM을 받았다. 10월 15일에 확인한 main은 여전히 `experimental`이었다. 승인 뒤 기본 활성화를 반영할 후속 CL은 별도 확인이 남았다.
+
+ProgressEvent는 10월 7일 승인 링크를 CL에 연결해 재검토를 요청했고, 10월 13일 UTC에 구현 CL 자체가 `stable` 설정으로 병합됐다. 이 경우 기본 활성화만을 위한 별도 CL이 반드시 하나 더 필요한 것은 아니었다. 중요한 것은 **승인된 범위를 어느 코드가 구현하며, 기본 활성화 작업이 남았는지**다. 남은 변경에도 사람의 리뷰와 자동 검증을 적용한다. [XML CL](https://chromium-review.googlesource.com/c/chromium/src/+/8301932), [ProgressEvent 리뷰](https://chromium-review.googlesource.com/changes/8425503/comments)
+
+## 목표 버전 포함과 실제 배포를 확인한다
+
+### Branch와 배포 채널
+
+**main**은 개발 코드가 계속 통합되는 계열, **release branch**는 특정 제품 버전을 준비하는 코드 계열이다. main의 변경이 목표 버전 branch에도 포함됐는지는 별도로 확인한다.
+
+Chrome은 Canary·Dev·Beta 등의 채널을 거쳐 Stable로 배포된다. 웹 플랫폼 변화는 main에서 기본 활성화하고 채널을 따라 검증하는 **waterfall rollout**을 선호한다. 같은 버전의 사용자마다 API 동작이 다르면 재현이 어려워지기 때문이다. 심각한 문제가 생겼을 때 원격으로 끌 flag는 여전히 필요하다. [출시·flag 지침](https://chromium.googlesource.com/chromium/src/+/main/docs/flag_guarding_guidelines.md)
+
+버전 확인에는 네 가지 증거를 이어 본다.
+
+1. ChromiumDash에서 목표 milestone의 branch 번호를 찾는다.
+2. Branch 소스에서 구현·기본값·노출 선언이 남아 있는지 확인한다.
+3. 대상 플랫폼과 채널에 배포된 브라우저 버전을 확인한다.
+4. 그 환경에서 동작과 회귀를 확인한다.
+
+**Commit position**은 커밋 순서를 나타내므로 분기점 이전 병합의 보조 근거가 된다. 하지만 revert나 cherry-pick을 배제하지 못해 실제 branch 코드 확인이 필요하다. 목표 버전을 놓치면 다음 milestone으로 옮기거나 release merge 심사를 검토한다. API-owner LGTM은 이 심사를 대신하지 않는다. [ChromiumDash](https://chromiumdash.appspot.com/branches), [Release merge 절차](https://chromium.googlesource.com/chromium/src/+/main/docs/process/merge_request.md)
+
+### 기준일에 확인된 도달 지점
+
+| 사례          | 확인한 것                                                          | 확인하지 않은 것                          |
+| ------------- | ------------------------------------------------------------------ | ----------------------------------------- |
+| XML MIME      | `experimental` 구현 병합, ITS 3 LGTM, 목표 M158                    | 후속 기본 활성화, M158 branch와 실제 배포 |
+| ProgressEvent | 승인 후 `stable` 구현 병합, M157 branch의 설정·Service Worker 노출 | 플랫폼별 Beta·Stable 배포와 실기 실행     |
+
+ProgressEvent의 병합 position `#1717288`은 M157 분기 기준 `#1717349`보다 앞선다. 실제 `branch-heads/8103`의 고정 코드에서도 `stable` 설정과 Service Worker 노출을 확인했다. 결론은 **M157 branch 코드 반영 확인**이다. 일반 사용자 배포 완료라는 뜻은 아니다. [M157 branch 정보](https://chromiumdash.appspot.com/fetch_milestones?mstone=157), [고정 설정](https://chromium.googlesource.com/chromium/src/+/f59581f12fc5be2ff11d5298e627a97c018e90ba/third_party/blink/renderer/platform/runtime_enabled_features.json5), [고정 노출 선언](https://chromium.googlesource.com/chromium/src/+/f59581f12fc5be2ff11d5298e627a97c018e90ba/third_party/blink/renderer/core/events/progress_event.idl)
+
+### 배포 뒤에도 남는 작업
+
+기본 제공 뒤에는 회귀·사용량·개발자 피드백을 관찰하고, 다른 엔진의 구현 과정에서 드러난 명세의 모호함과 빠진 테스트를 보완한다. 문서의 지원 버전은 목표가 아닌 실제 제공 상태에 맞춰야 한다. 복구 경로가 필요 없을 만큼 안정화되면 불필요한 코드와 flag를 정리한다. 지침은 통상 출시 후 1~2 milestones의 정리를 제시하지만, 날짜만으로 남은 사용처나 위험을 무시할 수 없다. [ChromeStatus Ship 단계](https://github.com/GoogleChrome/chromium-dashboard/blob/46150ef300f3c15116084b1a000b85554700f4c7/internals/processes.py), [명세 유지 원칙](https://www.chromium.org/blink/guidelines/web-platform-changes-guidelines/), [Flag 수명 관리](https://chromium.googlesource.com/chromium/src/+/main/docs/flag_guarding_guidelines.md)
+
+## 끝까지 진행하다보니
+
+크롬은 거대한 오픈소스 프로젝트이다. 너무나도 다양한 사람들이 사용하고 있기에, 브라우저의 호환성은 정말로 중요하기에 위와 같은 출시 승인 절차가 존재한다고 생각한다.
+
+그럼에도 이 절차를 통과하여 실제 웹에 노출되었다 해서 안정성을 보장하는것은 아닐 것이다. 언제든 예기치 못한 에러가 발생할 수 있고, 이에 대해서는 다시 feature 를 kill 해서 다시 수정할 수 있도록 하고 있다.
+
+이러다보니 차라리 빠르게 flag 기반으로 배포하고, 문제가 발생하면 그대로 flag off 를 진행해서 더 빠른 작업을 유도할 수 있지 않을까 하는 생각이 들기도 했다. 실제 chromium 내에서도 gemini 기반의 glic 를 개발 및 제공하고 있고, 변화의 흐름은 너무나도 빠르기에 기능의 변화 역시 빠르게 대응해야 하기 때문이다.
+
+하지만 그럼에도 intent to ship 을 위한 절차를 유지하고 있으며, 크롬은 변화보다 항상성을 중요시하고 있다는 점을 다시 한번 확인 할 수 있었다.
+
+프로젝트의 성격마다 무엇을 중시하는지 차이가 발생하겠지만, AI 기반으로 엄청난 양의 코드들이 배포되고 있는 시점에서 이러한 의식적인 검증 절차가 어떤 의미를 가질지 다시 한번 생각해 보는 계기가 되었다.
