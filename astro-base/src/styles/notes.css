@@ -411,7 +411,7 @@
 .note-body {
   max-width: 690px;
   margin: 70px auto;
-  font-size: 19px;
+  font-size: 15px;
   line-height: 1.95;
   word-break: keep-all;
   overflow-wrap: anywhere;
@@ -431,6 +431,17 @@
 .note-body h3 {
   font-size: 23px;
   margin: 32px 0 20px;
+}
+.note-body hr {
+  height: 1px;
+  margin: 48px 0;
+  border: 0;
+  background: linear-gradient(
+    to right,
+    transparent,
+    color-mix(in oklab, var(--foreground) 24%, transparent) 50%,
+    transparent
+  );
 }
 .note-body :is(ul, ol) {
   padding-left: 24px;
@@ -556,7 +567,6 @@
     aspect-ratio: 1.55;
   }
   .note-body {
-    font-size: 17px;
     margin: 40px auto;
   }
   .note-body h2 {

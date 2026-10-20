@@ -26,6 +26,19 @@
         "photographerUrl": "https://unsplash.com/@evg_klimov93?utm_source=yelihi_notes&utm_medium=referral",
         "photoUrl": "https://unsplash.com/photos/a-van-is-parked-in-front-of-a-mountain-range-1WPTabvTWpM?utm_source=yelihi_notes&utm_medium=referral"
       }
+    },
+    "2026-10-20": {
+      "source": "unsplash",
+      "src": "https://images.unsplash.com/photo-1692973496991-8379c01ce09e?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3wxMDk4OTcxfDB8MXxyYW5kb218fHx8fHx8fHwxNzkyNDg4ODQwfA&ixlib=rb-4.1.0&q=80&w=1080",
+      "width": 4928,
+      "height": 3264,
+      "alt": "a plane flying in the sky with a lot of clouds",
+      "attribution": {
+        "photoId": "-ny7G2UUHyE",
+        "photographer": "Pedro Romero",
+        "photographerUrl": "https://unsplash.com/@pedrox99?utm_source=yelihi_notes&utm_medium=referral",
+        "photoUrl": "https://unsplash.com/photos/a-plane-flying-in-the-sky-with-a-lot-of-clouds--ny7G2UUHyE?utm_source=yelihi_notes&utm_medium=referral"
+      }
     }
   }
 }
