@@ -1,0 +1,96 @@
+<svg
+  xmlns="http://www.w3.org/2000/svg"
+  viewBox="0 0 420 780"
+  role="img"
+  aria-labelledby="title description"
+>
+  <title id="title">집 맥미니로 향하는 서비스 요청</title>
+  <desc id="description">
+    브라우저에서 Cloudflare Access와 Worker를 거쳐 맥미니의 FastAPI로 요청이
+    전달된다. 데이터는 외장 SSD에 남고 AI 검토는 OpenAI API가 수행한다.
+  </desc>
+  <defs>
+    <marker
+      id="arrow"
+      markerWidth="10"
+      markerHeight="10"
+      refX="8"
+      refY="5"
+      orient="auto"
+      markerUnits="strokeWidth"
+    >
+      <path
+        d="M1 1 9 5 1 9"
+        fill="none"
+        stroke="#aa7048"
+        stroke-width="1.5"
+        stroke-linecap="round"
+        stroke-linejoin="round"
+      />
+    </marker>
+  </defs>
+  <rect width="420" height="780" rx="16" fill="#faf8f5" />
+  <text
+    x="28"
+    y="48"
+    fill="#98684a"
+    font-family="Pretendard, Apple SD Gothic Neo, sans-serif"
+    font-size="16"
+    letter-spacing="1.5"
+  >
+    REQUEST PATH
+  </text>
+  <g fill="#fff" stroke="#d9d4cc" stroke-width="1.5">
+    <rect x="28" y="78" width="364" height="138" rx="12" />
+    <rect x="28" y="273" width="364" height="138" rx="12" />
+    <rect x="28" y="468" width="364" height="138" rx="12" />
+  </g>
+  <g font-family="Pretendard, Apple SD Gothic Neo, sans-serif">
+    <g fill="#98684a" font-size="16">
+      <text x="52" y="113">01 · 사용자</text>
+      <text x="52" y="308">02 · 공개 진입</text>
+      <text x="52" y="503">03 · 집 안의 서버</text>
+    </g>
+    <g fill="#242321" font-size="28" font-weight="600">
+      <text x="52" y="155">브라우저</text>
+      <text x="52" y="350">Cloudflare</text>
+      <text x="52" y="545">Mac mini</text>
+    </g>
+    <g fill="#66615c" font-size="19">
+      <text x="52" y="191">로그인 · 화면 실행</text>
+      <text x="52" y="386">Access 인증 · Worker</text>
+      <text x="52" y="581">FastAPI · 문서 처리</text>
+    </g>
+  </g>
+  <g fill="none" stroke="#aa7048" stroke-width="2" marker-end="url(#arrow)">
+    <path d="M210 224v38" />
+    <path d="M210 419v38" />
+  </g>
+  <g
+    fill="#77716b"
+    font-family="Pretendard, Apple SD Gothic Neo, sans-serif"
+    font-size="15"
+  >
+    <text x="230" y="248">HTTPS</text>
+    <text x="230" y="443">API · Tunnel</text>
+  </g>
+  <g fill="none" stroke="#aa7048" stroke-width="2">
+    <path d="M210 606v24" />
+    <path d="M210 630h-89v20" marker-end="url(#arrow)" />
+    <path d="M210 630h89v20" marker-end="url(#arrow)" />
+  </g>
+  <g fill="#fff" stroke="#d9d4cc" stroke-width="1.5">
+    <rect x="28" y="654" width="174" height="96" rx="10" />
+    <rect x="218" y="654" width="174" height="96" rx="10" />
+  </g>
+  <g font-family="Pretendard, Apple SD Gothic Neo, sans-serif">
+    <g fill="#242321" font-size="19" font-weight="600">
+      <text x="48" y="694">외장 SSD</text>
+      <text x="238" y="694">OpenAI API</text>
+    </g>
+    <g fill="#66615c" font-size="15">
+      <text x="48" y="724">SQLite · 파일</text>
+      <text x="238" y="724">AI 검토</text>
+    </g>
+  </g>
+</svg>
