@@ -69,7 +69,7 @@ export function TableOfContents({ headings }: TableOfContentsProps) {
       initial={{ opacity: 0, x: 20 }}
       animate={{ opacity: 1, x: 0 }}
       transition={{ delay: 0.8, duration: 0.6 }}
-      className="max-h-[calc(100vh-7rem)] overflow-y-auto pr-2"
+      className="article-toc-scroll max-h-[calc(100vh-7rem)] overflow-y-auto pr-2"
     >
       <div className="text-xs">
         <p className="mb-3 text-muted-foreground uppercase tracking-wider">

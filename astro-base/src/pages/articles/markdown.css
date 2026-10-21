@@ -1,5 +1,13 @@
 @import '../../styles/global.css';
 
+.article-toc-scroll {
+  scrollbar-width: none;
+}
+
+.article-toc-scroll::-webkit-scrollbar {
+  display: none;
+}
+
 /* Markdown Content Styles */
 .blog-content {
   @apply text-foreground;
