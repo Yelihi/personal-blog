@@ -1,112 +1,24 @@
-<svg
-  xmlns="http://www.w3.org/2000/svg"
-  viewBox="0 0 1200 430"
-  role="img"
-  aria-labelledby="title description"
->
-  <title id="title">집 맥미니로 향하는 서비스 요청</title>
-  <desc id="description">
-    브라우저가 Cloudflare Access와 Worker를 지나 맥미니의 FastAPI에 도달한다.
-    맥미니는 외장 SSD에 데이터를 저장하고 OpenAI API에 검토를 요청한다.
-  </desc>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 280" role="img" aria-labelledby="title description">
+  <title id="title">브라우저에서 집 맥미니까지</title>
+  <desc id="description">브라우저 요청이 Cloudflare를 거쳐 맥미니로 전달되고, 맥미니는 외장 SSD와 OpenAI API를 사용한다.</desc>
   <defs>
-    <marker
-      id="arrow"
-      markerWidth="10"
-      markerHeight="10"
-      refX="8"
-      refY="5"
-      orient="auto"
-      markerUnits="strokeWidth"
-    >
-      <path
-        d="M1 1 9 5 1 9"
-        fill="none"
-        stroke="#aa7048"
-        stroke-width="1.5"
-        stroke-linecap="round"
-        stroke-linejoin="round"
-      />
+    <marker id="arrow" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto">
+      <path d="M1 1 7 4 1 7" fill="none" stroke="#858585" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round" />
     </marker>
   </defs>
-  <rect width="1200" height="430" rx="20" fill="#faf8f5" />
-  <text
-    x="55"
-    y="50"
-    fill="#98684a"
-    font-family="Pretendard, Apple SD Gothic Neo, sans-serif"
-    font-size="18"
-    letter-spacing="2"
-  >
-    REQUEST PATH
-  </text>
-  <text
-    x="1145"
-    y="50"
-    fill="#77716b"
-    font-family="Pretendard, Apple SD Gothic Neo, sans-serif"
-    font-size="18"
-    text-anchor="end"
-  >
-    이력서 검토 서비스
-  </text>
-
-  <g fill="#fff" stroke="#d9d4cc" stroke-width="1.5">
-    <rect x="55" y="88" width="275" height="165" rx="12" />
-    <rect x="460" y="88" width="275" height="165" rx="12" />
-    <rect x="865" y="88" width="280" height="165" rx="12" />
+  <g fill="#242424" font-family="Pretendard, Apple SD Gothic Neo, sans-serif" font-size="27" font-weight="400" text-anchor="middle">
+    <text x="105" y="81">브라우저</text>
+    <text x="600" y="81">Cloudflare</text>
+    <text x="1095" y="81">Mac mini</text>
   </g>
-  <g font-family="Pretendard, Apple SD Gothic Neo, sans-serif">
-    <g fill="#98684a" font-size="18">
-      <text x="80" y="124">01 · 사용자</text>
-      <text x="485" y="124">02 · 공개 진입</text>
-      <text x="890" y="124">03 · 집 안의 서버</text>
-    </g>
-    <g fill="#242321" font-size="31" font-weight="600">
-      <text x="80" y="175">브라우저</text>
-      <text x="485" y="175">Cloudflare</text>
-      <text x="890" y="175">Mac mini</text>
-    </g>
-    <g fill="#66615c" font-size="20">
-      <text x="80" y="218">로그인 · 화면 실행</text>
-      <text x="485" y="218">Access 인증 · Worker</text>
-      <text x="890" y="218">FastAPI · 문서 처리</text>
-    </g>
+  <g fill="none" stroke="#858585" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" marker-end="url(#arrow)">
+    <path d="M170 105H520" />
+    <path d="M680 105H1025" />
+    <path d="M1095 128V173H946V208" />
+    <path d="M1095 173V208" />
   </g>
-  <g fill="none" stroke="#aa7048" stroke-width="2" marker-end="url(#arrow)">
-    <path d="M347 171h94" />
-    <path d="M752 171h94" />
-  </g>
-  <g
-    fill="#77716b"
-    font-family="Pretendard, Apple SD Gothic Neo, sans-serif"
-    font-size="16"
-    text-anchor="middle"
-  >
-    <text x="395" y="151">HTTPS</text>
-    <text x="799" y="142">API만 전달</text>
-    <text x="799" y="163">VPC · Tunnel</text>
-  </g>
-
-  <g fill="none" stroke="#aa7048" stroke-width="2">
-    <path d="M1005 253v36" />
-    <path d="M1005 289H760v24" marker-end="url(#arrow)" />
-    <path d="M1005 289h85v24" marker-end="url(#arrow)" />
-  </g>
-  <g fill="#fff" stroke="#d9d4cc" stroke-width="1.5">
-    <rect x="595" y="315" width="325" height="75" rx="10" />
-    <rect x="955" y="315" width="190" height="75" rx="10" />
-  </g>
-  <g font-family="Pretendard, Apple SD Gothic Neo, sans-serif">
-    <text x="620" y="346" fill="#242321" font-size="21" font-weight="600">
-      외장 SSD
-    </text>
-    <text x="620" y="374" fill="#66615c" font-size="18">
-      SQLite · 원본 파일
-    </text>
-    <text x="978" y="346" fill="#242321" font-size="21" font-weight="600">
-      OpenAI API
-    </text>
-    <text x="978" y="374" fill="#66615c" font-size="18">AI 검토</text>
+  <g fill="#555" font-family="Pretendard, Apple SD Gothic Neo, sans-serif" font-size="21" font-weight="400" text-anchor="middle">
+    <text x="946" y="246">외장 SSD</text>
+    <text x="1095" y="246">OpenAI API</text>
   </g>
 </svg>

@@ -116,22 +116,22 @@ const relatedArticles = transferedImagesFormatAllArticles.filter(
         {
           article.data.coverImage && (
             <div class="mb-12">
-            <div class="aspect-video overflow-hidden border border-border">
-              <img
-                src={article.data.coverImage.src}
-                alt={article.data.unsplashCover?.alt ?? article.data.title}
-                width={article.data.coverImage.width}
-                height={article.data.coverImage.height}
-                class="w-full h-full object-cover"
-              />
-            </div>
-            <UnsplashCredit cover={article.data.unsplashCover} />
+              <div class="aspect-video overflow-hidden border border-border">
+                <img
+                  src={article.data.coverImage.src}
+                  alt={article.data.unsplashCover?.alt ?? article.data.title}
+                  width={article.data.coverImage.width}
+                  height={article.data.coverImage.height}
+                  class="w-full h-full object-cover"
+                />
+              </div>
+              <UnsplashCredit cover={article.data.unsplashCover} />
             </div>
           )
         }
 
         {/* Markdown Content */}
-        <div class="blog-content prose prose-lg max-w-none dark:prose-invert">
+        <div class="blog-content prose max-w-none dark:prose-invert">
           <Content />
         </div>
 

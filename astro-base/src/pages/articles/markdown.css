@@ -3,6 +3,10 @@
 /* Markdown Content Styles */
 .blog-content {
   @apply text-foreground;
+  font-size: 15px;
+  line-height: 1.95;
+  word-break: keep-all;
+  overflow-wrap: anywhere;
 }
 
 .blog-content h1,
@@ -13,11 +17,13 @@
 }
 
 .blog-content h2 {
-  @apply text-3xl mt-12 mb-6;
+  @apply mt-12 mb-6;
+  font-size: 28px;
 }
 
 .blog-content h3 {
-  @apply text-2xl mt-10 mb-4;
+  @apply mt-10 mb-4;
+  font-size: 23px;
 }
 
 .blog-content h4 {
@@ -25,7 +31,8 @@
 }
 
 .blog-content p {
-  @apply mb-6 leading-relaxed;
+  @apply mb-6;
+  line-height: inherit;
 }
 
 .blog-content a {
@@ -58,7 +65,7 @@
 }
 
 .blog-content li {
-  @apply leading-relaxed;
+  line-height: inherit;
 }
 
 .blog-content blockquote {
@@ -67,6 +74,14 @@
 
 .blog-content img {
   @apply my-8 border border-border;
+}
+
+.blog-content img.request-diagram {
+  border: 0;
+}
+
+.dark .blog-content img.request-diagram {
+  filter: invert(1);
 }
 
 .blog-content table {
@@ -89,4 +104,10 @@
 
 .blog-content hr {
   @apply my-8 border-border;
+}
+
+@media (max-width: 760px) {
+  .blog-content h2 {
+    font-size: 24px;
+  }
 }
