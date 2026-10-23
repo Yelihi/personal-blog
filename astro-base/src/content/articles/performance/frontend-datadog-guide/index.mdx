@@ -1,0 +1,302 @@
+---
+title: '현대 프론트엔드의 성능 측정과 분석(1)'
+excerpt: '현 시점의 복잡해진 프론트엔드의 성능 측정을 위한 DataDog의 가이드라인'
+date: '2026.10.22'
+category: 'Performance'
+coverImage: './cover.png'
+readTime: '10 min read'
+tags: ['Performance', 'DataDog']
+---
+
+import contentLoadDiagram from './content-load.svg';
+import spaInitialLoadDiagram from './spa-initial-load.svg';
+import structureInBrowserActivityDiagram from "./structure-in-browser-activiity.svg"
+
+## 현대 프론트엔드의 성능 측정은 무엇이 다를까?
+
+프론트엔드에서 성능 문제를 확인할 때 주로 Chrome DevTools의 Network, Performance 패널을 활용한다.
+
+그런데 화면 로딩이 빠르다고 해서 서비스 전체의 성능이 좋은 것은 아니다. 최초 페이지 로딩 이후에도 라우팅, API 요청, 상태 변경, 렌더링 등 다양한 작업이 발생하기 때문이다.
+
+Datadog의 *Frontend Monitoring Best Practices* 문서를 읽으면서, 각각의 상황에서 무엇을 측정해야 하고 브라우저가 어떤 도구를 제공하는지 살펴봤다.
+
+> 💡 **RUM(Real User Monitoring)이란?** 실제 사용자의 브라우저에서 발생한 페이지 조회, 클릭, 요청, 오류 등의 데이터를 수집해 사용 환경의 경험을 분석하는 방식이다. 개발자 PC에서 한 번 실행하는 DevTools 측정과 달리 사용자·기기·네트워크에 따른 차이를 볼 수 있다. [Datadog RUM 수집 데이터](https://docs.datadoghq.com/real_user_monitoring/application_monitoring/browser/data_collected/)
+
+## SPA에서는 무엇이 달라질까?
+
+<picture>
+  <source
+    media="(max-width: 640px)"
+    srcSet={spaInitialLoadDiagram.src}
+    width="420"
+    height="520"
+  />
+  <img
+    src={spaInitialLoadDiagram.src}
+    alt="SPA initial load"
+    width="1200"
+    height="280"
+    loading="lazy"
+    class="request-diagram"
+  />
+</picture>
+
+전통적인 MPA는 페이지 이동 시 새로운 HTML 문서를 요청한다. 따라서 `DOMContentLoaded`, `load`, `PerformanceNavigationTiming` 등을 통해 페이지 로딩 과정을 측정할 수 있다.
+
+반면 SPA는 일반적으로 기존 Document를 유지한 채 URL과 화면을 갱신한다.
+
+**문제는 기존 Navigation Timing으로는 SPA 내부 라우팅 성능을 충분히 측정할 수 없다는 것이다.**
+
+> 💡 **Navigation Timing의 측정 단위**는 문서 탐색이다. SPA에서 기존 Document를 유지한 채 URL과 화면만 바꾸면 새 탐색 기록이 생기지 않으므로, 그 화면 전환 시간은 별도로 측정해야 한다. [Datadog의 SPA 측정 설명](https://docs.datadoghq.com/real_user_monitoring/application_monitoring/browser/monitoring_page_performance/)
+
+가령 상품 목록에서 상세 페이지로 이동하는 데 3초가 걸려도, 최초 페이지 로딩 지표에는 이 과정이 별도의 탐색으로 기록되지 않는다.
+
+따라서 성능 측정 대상을 네 가지 상황으로 구분해볼 필요가 있다.
+
+- Initial Load: 최초 페이지 로딩
+- Route Change: SPA 내부 화면 전환
+- User Interaction: 클릭·입력 이후의 화면 변화
+- End-to-End: 브라우저 요청부터 백엔드 실행까지의 지연
+
+## Initial Load — 페이지 로딩이 완료되었다는 기준은?
+
+브라우저는 최초 문서 로딩 과정에서 여러 성능 지표를 제공한다.
+
+| 지표 | 의미 |
+|---|---|
+| DOMContentLoaded | HTML 파싱 및 관련 스크립트 실행 완료 |
+| load | 문서의 load 이벤트 발생 |
+| FCP | 첫 번째 콘텐츠가 렌더링된 시점 |
+| LCP | 가장 큰 콘텐츠 요소가 렌더링된 시점 |
+
+예를 들어 `load`가 1초에 발생했더라도, 주요 상품 이미지가 2초에 표시될 수 있다.
+
+**문서가 로드된 시점과 사용자가 주요 콘텐츠를 확인할 수 있는 시점은 다르다.**
+
+> 💡 **FCP와 LCP는 무엇을 보여줄까?** FCP는 첫 콘텐츠가 보이기 시작한 시점, LCP는 화면에서 가장 큰 콘텐츠가 그려진 시점을 본다. `load` 이벤트와 함께 읽으면 브라우저의 문서 로딩과 사용자가 화면을 보는 시점 사이의 차이를 파악하기 쉽다. [Datadog 페이지 성능 지표](https://docs.datadoghq.com/real_user_monitoring/application_monitoring/browser/monitoring_page_performance/)
+
+브라우저에서는 다음처럼 직접 확인할 수 있다.
+
+```js
+const navigation =
+  performance.getEntriesByType("navigation")[0];
+
+console.table({
+  domContentLoaded: navigation.domContentLoadedEventEnd,
+  load: navigation.loadEventEnd,
+});
+```
+
+LCP는 `PerformanceObserver`로 관측할 수 있다.
+
+```js
+const observer = new PerformanceObserver((list) => {
+  for (const entry of list.getEntries()) {
+    console.log(entry.startTime, entry.element);
+  }
+});
+
+observer.observe({
+  type: "largest-contentful-paint",
+  buffered: true,
+});
+```
+
+### Datadog의 접근
+
+Datadog은 Navigation Timing, Web Vitals 등의 데이터를 수집한다. 여기에 네트워크 요청과 DOM 변경을 관측해 페이지 활동이 안정화되는 시점까지 고려한 `view.loading_time`을 제공한다.
+
+즉, 브라우저의 기본 로딩 이벤트만으로 판단하지 않는다. 다르게 말하자면 브라우저의 기본 이벤트 단일로서 성능을 판단하지 않고, 각각의 기준치를 세워둔 체 측정값들의 상황을 분석해서 정말로 무엇이 사용자 경험에 영향을 미쳤는지 체크하는 형식이다.
+
+## Route Change — SPA에서 화면 전환 시간을 어떻게 측정할까?
+
+SPA 내부 라우팅은 반드시 새로운 Document를 생성하지 않는다.
+
+React Router 등에서 `history.pushState()`로 URL을 변경하고 컴포넌트를 렌더링하면 Navigation Timing Entry가 새로 생성되지 않는 것이 일반적이다.
+
+그렇다면 라우팅 성능은 어떻게 측정할까?
+
+### 직접 측정하기
+
+브라우저의 User Timing API를 활용하면 원하는 시점을 기록할 수 있다.
+
+```js
+// 라우팅 시작
+performance.mark("route-start");
+
+// 주요 콘텐츠가 준비된 시점
+performance.mark("route-ready");
+
+// 소요 시간 계산
+performance.measure(
+  "route-duration",
+  "route-start",
+  "route-ready"
+);
+```
+
+문제는 시작과 종료 시점을 개발자가 직접 정의해야 한다는 것이다.
+
+특히 React의 Suspense처럼 콘텐츠를 점진적으로 표시하는 환경에서는 더욱 그렇다.
+
+상품 기본 정보는 300ms, 재고 정보는 900ms, 추천 상품은 2,500ms에 준비되었다면 로딩 완료 시점은 언제일까?
+
+<picture>
+  <source
+    media="(max-width: 640px)"
+    srcSet={contentLoadDiagram.src}
+    width="420"
+    height="520"
+  />
+  <img
+    src={contentLoadDiagram.src}
+    alt="Content load diagram"
+    width="1200"
+    height="280"
+    loading="lazy"
+    class="request-diagram"
+  />
+</picture>
+
+정답은 측정 목적에 따라 달라진다. 사용자가 상품을 확인하는 데 필요한 콘텐츠와 추가 콘텐츠를 구분해야 한다.
+
+### Datadog은 어떻게 자동화할까?
+
+Datadog RUM은 History API를 기반으로 SPA의 URL 변경을 감지한다.
+
+> 💡 **Datadog의 View와 Action**: View는 최초 로딩이나 SPA 라우트 변경처럼 사용자가 보는 화면의 단위다. Action은 그 화면 안에서 일어난 클릭 같은 사용자 행동이다. 따라서 `view.loading_time`은 화면 준비 시간, `action.loading_time`은 클릭 뒤 활동이 안정될 때까지의 시간으로 읽는다. [페이지 성능 측정](https://docs.datadoghq.com/real_user_monitoring/application_monitoring/browser/monitoring_page_performance/), [사용자 행동 추적](https://docs.datadoghq.com/real_user_monitoring/application_monitoring/browser/tracking_user_actions/)
+
+이후 다음 활동을 관측한다.
+
+<picture>
+  <source
+    media="(max-width: 640px)"
+    srcSet={structureInBrowserActivityDiagram.src}
+    width="420"
+    height="520"
+  />
+  <img
+    src={structureInBrowserActivityDiagram.src}
+    alt="Structure in browser activity diagram"
+    width="1200"
+    height="280"
+    loading="lazy"
+    class="request-diagram"
+  />
+</picture>
+
+- Fetch/XHR 요청 진행 여부
+- Resource Timing 이벤트
+- DOM 변경 여부
+
+활동이 100ms 동안 발생하지 않으면 화면이 안정화되었다고 추정한다.
+
+이 방식은 모든 라우트에 `performance.mark()`를 직접 작성할 필요를 줄여준다.
+
+다만 지속적인 polling이나 Long Polling처럼 화면 로딩과 무관한 활동도 있을 수 있다.
+
+Datadog에서는 `excludedActivityUrls` 등을 이용해 이런 요청을 로딩 활동 계산에서 제외할 수 있다.
+
+**핵심은 네트워크나 DOM의 활동이 멈췄다는 사실과 사용자에게 중요한 콘텐츠가 완성되었다는 사실을 구분하는 것이다.**
+
+자동 측정이 실제 서비스의 준비 완료 기준과 다르다면 개발자가 직접 완료 시점을 지정하는 것이 더 정확할 수 있다.
+
+## User Interaction — 클릭 후 발생하는 지연은 어떻게 측정할까?
+
+라우트 변경 없이 화면이 바뀌는 상황도 많다.
+
+예를 들어 장바구니 버튼을 클릭했을 때 다음 작업이 발생한다고 가정하자.
+
+1. 클릭 이벤트 실행
+2. API 요청
+3. 상태 변경
+4. React 렌더링 및 DOM 갱신
+5. 추천 상품 모달 표시
+
+이 작업은 History API만으로 측정할 수 없다.
+
+또한 Fetch 자체는 비동기적으로 진행되지만, 응답 후 발생하는 JavaScript 실행과 렌더링은 메인 스레드를 점유할 수 있다.
+
+따라서 클릭 이후의 경험을 분석하려면 여러 신호가 필요하다.
+
+| 관측 대상 | 활용 방법 |
+|---|---|
+| 클릭 발생 | Event Listener |
+| API 요청 | Fetch/XHR 계측 |
+| 긴 JS 작업 | Long Task 관측 |
+| DOM 변경 | MutationObserver |
+| 입력 반응성 | INP |
+
+여기서 중요한 것은 **INP와 전체 작업 완료 시간은 다르다는 점**이다.
+
+> 💡 **INP(Interaction to Next Paint)**는 클릭·탭·키 입력부터 그 상호작용에 대한 다음 화면 갱신까지의 반응성을 본다. 네트워크 요청과 이후의 모든 비동기 결과가 끝나는 시간은 포함하지 않는다. 표의 **Long Task**는 메인 스레드를 50ms 넘게 점유하는 작업으로, 입력 반응을 늦추는 원인 중 하나다. [INP 설명](https://web.dev/articles/inp), [Datadog RUM 이벤트](https://docs.datadoghq.com/real_user_monitoring/application_monitoring/browser/data_collected/)
+
+클릭 직후 로딩 UI를 빠르게 표시했다면 INP는 양호할 수 있다. 그러나 실제 모달 데이터가 2초 뒤에 표시된다면 사용자는 여전히 지연을 경험한다.
+
+### Datadog은 어떻게 측정할까?
+
+Datadog은 클릭 이벤트를 Action으로 수집하고, 클릭 이후 발생한 Resource, Long Task, Error 등을 연관 지어 분석한다.
+
+`action.loading_time`은 클릭 이후의 페이지 활동을 기반으로 계산된다.
+
+또한 자동 클릭 이벤트와 비즈니스 결과는 구분할 필요가 있다.
+
+장바구니 버튼을 클릭했다고 해서 실제로 상품이 추가된 것은 아니기 때문이다.
+
+클릭은 사용자의 시도이며, 서버에서 확인된 성공 결과는 별도의 이벤트로 기록할 수 있다.
+
+이를 세션 단위로 모으면 상품 방문부터 구매 완료까지 사용자 흐름을 분석하는 Funnel도 구성할 수 있다.
+
+## End-to-End — 느린 원인이 프론트엔드가 아니라면?
+
+지금까지는 브라우저 내부의 활동을 중심으로 살펴봤다.
+
+그런데 API 응답에 2초가 걸렸다면 어떻게 해야 할까?
+
+Resource Timing을 통해 요청의 일부 네트워크 단계는 확인할 수 있지만, 서버 내부에서 어떤 작업이 지연되었는지는 이것만으로 알 수 없다.
+
+예를 들어 서버의 DB 조회가 느린 것인지, 다른 마이크로서비스 호출이 문제인지 구분해야 한다.
+
+여기서 **Distributed Tracing**이 필요하다.
+
+> 💡 **APM(Application Performance Monitoring)과 Trace**: APM은 서버 애플리케이션의 요청과 실행 시간을 관찰한다. 분산 추적은 연결된 작업을 하나의 Trace로 묶고 각 구간을 Span으로 남긴다. 브라우저의 RUM 요청과 서버 Trace를 연결하려면 백엔드 계측과 추적 설정이 필요하다. [Datadog RUM·Trace 연결](https://docs.datadoghq.com/tracing/other_telemetry/rum/?tab=browserrum)
+
+하나의 요청에 동일한 Trace ID를 전파하고, 각 시스템의 작업을 Span으로 기록하는 방식이다.
+
+| 개념 | 역할 |
+|---|---|
+| Trace ID | 관련 작업을 하나의 요청 흐름으로 연결 |
+| Span ID | 개별 작업 식별 |
+| Parent Span | 작업 간 호출 관계 표현 |
+
+### Datadog의 접근
+
+RUM으로 브라우저의 요청을 관측하고, 백엔드 APM과 연결해 서버 내부의 Trace를 확인한다.
+
+이를 통해 사용자 화면의 지연에서 출발해 실제 병목이 발생한 서비스까지 추적할 수 있다.
+
+물론 백엔드에도 추적 계측이 필요하다.
+
+## 실제 디버깅에서는 어떻게 활용할까?
+
+위 내용을 기준으로 보면 프론트엔드 성능 문제를 조사하는 순서를 조금 더 명확하게 잡을 수 있다.
+
+| 증상 | 먼저 확인할 지표 | 다음 조사 |
+|---|---|---|
+| 최초 화면이 느림 | LCP, Navigation Timing | 리소스 로딩, JS 실행 |
+| SPA 이동이 느림 | Route Loading Time | Fetch, DOM 변경 |
+| 클릭 반응이 느림 | INP, Long Task | 이벤트 핸들러, 렌더링 |
+| 클릭 후 결과가 늦음 | Action Loading Time | API, 비동기 상태 변경 |
+| API가 느림 | Resource Timing | 서버 Trace, DB |
+| 사용자가 작업을 포기함 | Funnel, 오류·성능 지표 | 사용자 흐름과 이탈 구간 |
+
+단일 지표만으로 원인을 확정하기보다는 **사용자가 경험한 문제를 기준으로 여러 측정값을 연결하는 것**이 중요하다.
+
+---
+
+### References
+
+- [Datadog — Frontend Monitoring Best Practices](https://lp.datadoghq.com/rs/875-UVY-685/images/Content-eBookFrontendMonitoringBestPracticesGuide.pdf)
+- [Datadog — Monitoring Page Performance](https://docs.datadoghq.com/real_user_monitoring/application_monitoring/browser/monitoring_page_performance/)
+- [Datadog — Tracking User Actions](https://docs.datadoghq.com/real_user_monitoring/application_monitoring/browser/tracking_user_actions/)
+- [Datadog — RUM Browser Data Collected](https://docs.datadoghq.com/real_user_monitoring/application_monitoring/browser/data_collected/)
