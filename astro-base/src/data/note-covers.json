@@ -39,6 +39,19 @@
         "photographerUrl": "https://unsplash.com/@pedrox99?utm_source=yelihi_notes&utm_medium=referral",
         "photoUrl": "https://unsplash.com/photos/a-plane-flying-in-the-sky-with-a-lot-of-clouds--ny7G2UUHyE?utm_source=yelihi_notes&utm_medium=referral"
       }
+    },
+    "2026-10-27": {
+      "source": "unsplash",
+      "src": "https://images.unsplash.com/photo-1620971405116-791369420ac3?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3wxMDk4OTcxfDB8MXxyYW5kb218fHx8fHx8fHwxNzkzMTA1MjM2fA&ixlib=rb-4.1.0&q=80&w=1080",
+      "width": 5184,
+      "height": 3456,
+      "alt": "black and white abstract painting",
+      "attribution": {
+        "photoId": "cnaUnuKG0so",
+        "photographer": "Gabriel Soto",
+        "photographerUrl": "https://unsplash.com/@gabriel_soto?utm_source=yelihi_notes&utm_medium=referral",
+        "photoUrl": "https://unsplash.com/photos/black-and-white-abstract-painting-cnaUnuKG0so?utm_source=yelihi_notes&utm_medium=referral"
+      }
     }
   }
 }
