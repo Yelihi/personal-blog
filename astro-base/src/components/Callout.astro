@@ -1,0 +1,30 @@
+---
+import { Info, Lightbulb, TriangleAlert, OctagonAlert } from 'lucide-react';
+
+interface Props {
+  title: string;
+  theme?: 'note' | 'tip' | 'warning' | 'danger';
+}
+
+const { title, theme = 'note' } = Astro.props;
+const icons = {
+  note: Info,
+  tip: Lightbulb,
+  warning: TriangleAlert,
+  danger: OctagonAlert,
+};
+const Icon = icons[theme];
+---
+
+<aside class="article-callout" data-theme={theme} aria-label={title}>
+  <Icon
+    className="article-callout__icon"
+    size={20}
+    strokeWidth={2}
+    aria-hidden="true"
+  />
+  <div>
+    <strong class="article-callout__title">{title}</strong>
+    <div class="article-callout__body"><slot /></div>
+  </div>
+</aside>

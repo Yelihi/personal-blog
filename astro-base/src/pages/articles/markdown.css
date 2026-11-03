@@ -80,6 +80,75 @@
   @apply my-6 pl-4 border-l-4 border-border italic text-muted-foreground;
 }
 
+.blog-content .article-callout {
+  --callout-accent: oklch(0.5 0.15 250);
+  display: grid;
+  grid-template-columns: 20px minmax(0, 1fr);
+  gap: 12px;
+  margin: 28px 0;
+  padding: 18px 20px;
+  border: 1px solid
+    color-mix(in oklab, var(--callout-accent) 28%, var(--border));
+  border-left: 3px solid var(--callout-accent);
+  border-radius: 12px;
+  background: color-mix(in oklab, var(--callout-accent) 7%, var(--background));
+  color: var(--foreground);
+  font-style: normal;
+}
+
+.blog-content .article-callout[data-theme='tip'] {
+  --callout-accent: oklch(0.48 0.14 155);
+}
+
+.blog-content .article-callout[data-theme='warning'] {
+  --callout-accent: oklch(0.52 0.15 75);
+}
+
+.blog-content .article-callout[data-theme='danger'] {
+  --callout-accent: oklch(0.52 0.19 25);
+}
+
+.dark .blog-content .article-callout[data-theme='note'] {
+  --callout-accent: oklch(0.76 0.12 250);
+}
+
+.dark .blog-content .article-callout[data-theme='tip'] {
+  --callout-accent: oklch(0.77 0.13 155);
+}
+
+.dark .blog-content .article-callout[data-theme='warning'] {
+  --callout-accent: oklch(0.8 0.14 75);
+}
+
+.dark .blog-content .article-callout[data-theme='danger'] {
+  --callout-accent: oklch(0.73 0.17 25);
+}
+
+.blog-content .article-callout__icon,
+.blog-content .article-callout__title {
+  color: var(--callout-accent);
+}
+
+.blog-content .article-callout__icon {
+  margin-top: 2px;
+}
+
+.blog-content .article-callout__title {
+  display: block;
+  margin-bottom: 5px;
+  font-size: 15px;
+  font-weight: 700;
+  line-height: 1.5;
+}
+
+.blog-content .article-callout__body p {
+  margin: 0;
+}
+
+.blog-content .article-callout__body > * + * {
+  margin-top: 10px;
+}
+
 .blog-content img {
   @apply my-8 border border-border;
 }
