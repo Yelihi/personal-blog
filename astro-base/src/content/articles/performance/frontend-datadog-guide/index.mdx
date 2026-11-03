@@ -8,6 +8,7 @@ readTime: '10 min read'
 tags: ['Performance', 'DataDog']
 ---
 
+import Callout from '@/components/Callout.astro';
 import contentLoadDiagram from './content-load.svg';
 import spaInitialLoadDiagram from './spa-initial-load.svg';
 import structureInBrowserActivityDiagram from "./structure-in-browser-activiity.svg"
@@ -20,7 +21,9 @@ import structureInBrowserActivityDiagram from "./structure-in-browser-activiity.
 
 Datadog의 *Frontend Monitoring Best Practices* 문서를 읽으면서, 각각의 상황에서 무엇을 측정해야 하고 브라우저가 어떤 도구를 제공하는지 살펴봤다.
 
-> 💡 **RUM(Real User Monitoring)이란?** 실제 사용자의 브라우저에서 발생한 페이지 조회, 클릭, 요청, 오류 등의 데이터를 수집해 사용 환경의 경험을 분석하는 방식이다. 개발자 PC에서 한 번 실행하는 DevTools 측정과 달리 사용자·기기·네트워크에 따른 차이를 볼 수 있다. [Datadog RUM 수집 데이터](https://docs.datadoghq.com/real_user_monitoring/application_monitoring/browser/data_collected/)
+<Callout theme="note" title="RUM(Real User Monitoring)이란?">
+  실제 사용자의 브라우저에서 발생한 페이지 조회, 클릭, 요청, 오류 등의 데이터를 수집해 사용 환경의 경험을 분석하는 방식이다. 개발자 PC에서 한 번 실행하는 DevTools 측정과 달리 사용자·기기·네트워크에 따른 차이를 볼 수 있다. [Datadog RUM 수집 데이터](https://docs.datadoghq.com/real_user_monitoring/application_monitoring/browser/data_collected/)
+</Callout>
 
 ## SPA에서는 무엇이 달라질까?
 
@@ -47,7 +50,9 @@ Datadog의 *Frontend Monitoring Best Practices* 문서를 읽으면서, 각각�
 
 **문제는 기존 Navigation Timing으로는 SPA 내부 라우팅 성능을 충분히 측정할 수 없다는 것이다.**
 
-> 💡 **Navigation Timing의 측정 단위**는 문서 탐색이다. SPA에서 기존 Document를 유지한 채 URL과 화면만 바꾸면 새 탐색 기록이 생기지 않으므로, 그 화면 전환 시간은 별도로 측정해야 한다. [Datadog의 SPA 측정 설명](https://docs.datadoghq.com/real_user_monitoring/application_monitoring/browser/monitoring_page_performance/)
+<Callout theme="note" title="Navigation Timing의 측정 단위">
+  문서 탐색이다. SPA에서 기존 Document를 유지한 채 URL과 화면만 바꾸면 새 탐색 기록이 생기지 않으므로, 그 화면 전환 시간은 별도로 측정해야 한다. [Datadog의 SPA 측정 설명](https://docs.datadoghq.com/real_user_monitoring/application_monitoring/browser/monitoring_page_performance/)
+</Callout>
 
 가령 상품 목록에서 상세 페이지로 이동하는 데 3초가 걸려도, 최초 페이지 로딩 지표에는 이 과정이 별도의 탐색으로 기록되지 않는다.
 
@@ -73,7 +78,9 @@ Datadog의 *Frontend Monitoring Best Practices* 문서를 읽으면서, 각각�
 
 **문서가 로드된 시점과 사용자가 주요 콘텐츠를 확인할 수 있는 시점은 다르다.**
 
-> 💡 **FCP와 LCP는 무엇을 보여줄까?** FCP는 첫 콘텐츠가 보이기 시작한 시점, LCP는 화면에서 가장 큰 콘텐츠가 그려진 시점을 본다. `load` 이벤트와 함께 읽으면 브라우저의 문서 로딩과 사용자가 화면을 보는 시점 사이의 차이를 파악하기 쉽다. [Datadog 페이지 성능 지표](https://docs.datadoghq.com/real_user_monitoring/application_monitoring/browser/monitoring_page_performance/)
+<Callout theme="tip" title="FCP와 LCP는 무엇을 보여줄까?">
+  FCP는 첫 콘텐츠가 보이기 시작한 시점, LCP는 화면에서 가장 큰 콘텐츠가 그려진 시점을 본다. `load` 이벤트와 함께 읽으면 브라우저의 문서 로딩과 사용자가 화면을 보는 시점 사이의 차이를 파악하기 쉽다. [Datadog 페이지 성능 지표](https://docs.datadoghq.com/real_user_monitoring/application_monitoring/browser/monitoring_page_performance/)
+</Callout>
 
 브라우저에서는 다음처럼 직접 확인할 수 있다.
 
@@ -164,7 +171,9 @@ performance.measure(
 
 Datadog RUM은 History API를 기반으로 SPA의 URL 변경을 감지한다.
 
-> 💡 **Datadog의 View와 Action**: View는 최초 로딩이나 SPA 라우트 변경처럼 사용자가 보는 화면의 단위다. Action은 그 화면 안에서 일어난 클릭 같은 사용자 행동이다. 따라서 `view.loading_time`은 화면 준비 시간, `action.loading_time`은 클릭 뒤 활동이 안정될 때까지의 시간으로 읽는다. [페이지 성능 측정](https://docs.datadoghq.com/real_user_monitoring/application_monitoring/browser/monitoring_page_performance/), [사용자 행동 추적](https://docs.datadoghq.com/real_user_monitoring/application_monitoring/browser/tracking_user_actions/)
+<Callout theme="tip" title="Datadog의 View와 Action">
+  View는 최초 로딩이나 SPA 라우트 변경처럼 사용자가 보는 화면의 단위다. Action은 그 화면 안에서 일어난 클릭 같은 사용자 행동이다. 따라서 `view.loading_time`은 화면 준비 시간, `action.loading_time`은 클릭 뒤 활동이 안정될 때까지의 시간으로 읽는다. [페이지 성능 측정](https://docs.datadoghq.com/real_user_monitoring/application_monitoring/browser/monitoring_page_performance/), [사용자 행동 추적](https://docs.datadoghq.com/real_user_monitoring/application_monitoring/browser/tracking_user_actions/)
+</Callout>
 
 이후 다음 활동을 관측한다.
 
@@ -229,7 +238,9 @@ Datadog에서는 `excludedActivityUrls` 등을 이용해 이런 요청을 로딩
 
 여기서 중요한 것은 **INP와 전체 작업 완료 시간은 다르다는 점**이다.
 
-> 💡 **INP(Interaction to Next Paint)**는 클릭·탭·키 입력부터 그 상호작용에 대한 다음 화면 갱신까지의 반응성을 본다. 네트워크 요청과 이후의 모든 비동기 결과가 끝나는 시간은 포함하지 않는다. 표의 **Long Task**는 메인 스레드를 50ms 넘게 점유하는 작업으로, 입력 반응을 늦추는 원인 중 하나다. [INP 설명](https://web.dev/articles/inp), [Datadog RUM 이벤트](https://docs.datadoghq.com/real_user_monitoring/application_monitoring/browser/data_collected/)
+<Callout theme="warning" title="INP와 전체 작업 완료 시간은 다르다">
+  INP(Interaction to Next Paint)는 클릭·탭·키 입력부터 그 상호작용에 대한 다음 화면 갱신까지의 반응성을 본다. 네트워크 요청과 이후의 모든 비동기 결과가 끝나는 시간은 포함하지 않는다. 표의 **Long Task**는 메인 스레드를 50ms 넘게 점유하는 작업으로, 입력 반응을 늦추는 원인 중 하나다. [INP 설명](https://web.dev/articles/inp), [Datadog RUM 이벤트](https://docs.datadoghq.com/real_user_monitoring/application_monitoring/browser/data_collected/)
+</Callout>
 
 클릭 직후 로딩 UI를 빠르게 표시했다면 INP는 양호할 수 있다. 그러나 실제 모달 데이터가 2초 뒤에 표시된다면 사용자는 여전히 지연을 경험한다.
 
@@ -259,7 +270,9 @@ Resource Timing을 통해 요청의 일부 네트워크 단계는 확인할 수 
 
 여기서 **Distributed Tracing**이 필요하다.
 
-> 💡 **APM(Application Performance Monitoring)과 Trace**: APM은 서버 애플리케이션의 요청과 실행 시간을 관찰한다. 분산 추적은 연결된 작업을 하나의 Trace로 묶고 각 구간을 Span으로 남긴다. 브라우저의 RUM 요청과 서버 Trace를 연결하려면 백엔드 계측과 추적 설정이 필요하다. [Datadog RUM·Trace 연결](https://docs.datadoghq.com/tracing/other_telemetry/rum/?tab=browserrum)
+<Callout theme="note" title="APM(Application Performance Monitoring)과 Trace">
+  APM은 서버 애플리케이션의 요청과 실행 시간을 관찰한다. 분산 추적은 연결된 작업을 하나의 Trace로 묶고 각 구간을 Span으로 남긴다. 브라우저의 RUM 요청과 서버 Trace를 연결하려면 백엔드 계측과 추적 설정이 필요하다. [Datadog RUM·Trace 연결](https://docs.datadoghq.com/tracing/other_telemetry/rum/?tab=browserrum)
+</Callout>
 
 하나의 요청에 동일한 Trace ID를 전파하고, 각 시스템의 작업을 Span으로 기록하는 방식이다.
 
