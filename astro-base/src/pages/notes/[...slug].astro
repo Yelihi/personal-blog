@@ -1,6 +1,7 @@
 ---
 import { getCollection, render } from 'astro:content';
 import Default from '@/layouts/Default.astro';
+import BlogPosting from '@/components/BlogPosting.astro';
 import NoteCover from '@/components/react/notes/NoteCover';
 import { buildNoteIndex } from '@/composables/buildNoteIndex';
 import { noteSlug } from '../../../scripts/note-content.mjs';
@@ -30,6 +31,13 @@ const { Content } = await render(entry);
   image={note.cover.src}
   currentPage="notes"
 >
+  <BlogPosting
+    slot="head"
+    title={note.title}
+    description={note.excerpt || note.title}
+    date={note.dateISO}
+    image={note.cover.src}
+  />
   <noscript slot="head"
     ><style>
       .note-image-frame img {

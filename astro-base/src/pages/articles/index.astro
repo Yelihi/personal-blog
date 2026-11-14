@@ -4,7 +4,7 @@ import { getCollection } from 'astro:content';
 
 import { transferImagesFormat } from '@/composables/transferImagesFormat';
 import ArticlesContainer from '@/components/react/ArticlesContainer';
-import { SITE_DESCRIPTION, SITE_TITLE } from '@/consts';
+import { SITE_TITLE } from '@/consts';
 import DefaultLayout from '@/layouts/Default.astro';
 
 
@@ -21,6 +21,9 @@ const recentArticles = transferedImagesFormatArticles.sort((first, second) => {
 ---
 
 <!doctype html>
-<DefaultLayout title={SITE_TITLE} description={SITE_DESCRIPTION}>
+<DefaultLayout
+  title={`개발 글 목록 · ${SITE_TITLE}`}
+  description="JavaScript, React, Chromium과 프론트엔드 성능을 공부하고 문제를 해결하며 남긴 개발 기록을 모았습니다."
+>
   <ArticlesContainer client:load initialArticles={recentArticles} />
 </DefaultLayout>
