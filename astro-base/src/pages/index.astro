@@ -10,6 +10,13 @@ import HomeNoteSlider from '@/components/home/HomeNoteSlider.astro';
 import DefaultLayout from '@/layouts/Default.astro';
 import { SITE_DESCRIPTION, SITE_TITLE } from '@/consts';
 
+const websiteSchema = JSON.stringify({
+  '@context': 'https://schema.org',
+  '@type': 'WebSite',
+  name: SITE_TITLE,
+  url: Astro.site?.href,
+});
+
 const articles = await transferImagesFormat(
   await getCollection('articles'),
   'webp'
@@ -28,6 +35,7 @@ const recentNotes = noteIndex.notes.slice(0, 10);
 ---
 
 <DefaultLayout title={SITE_TITLE} description={SITE_DESCRIPTION} currentPage="">
+  <script slot="head" type="application/ld+json" set:html={websiteSchema} />
   <main class="home-shell">
     <HomeIntro />
     <HomeArticleGallery articles={recentArticles} />
