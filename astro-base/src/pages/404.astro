@@ -1,0 +1,93 @@
+---
+import DefaultLayout from '@/layouts/Default.astro';
+import { buttonVariants } from '@/components/react/atoms/Button';
+---
+
+<DefaultLayout
+  title="페이지를 찾을 수 없습니다 · Yelihi"
+  description="요청한 페이지를 찾을 수 없습니다. Yelihi의 글 목록에서 다른 이야기를 만나보세요."
+  currentPage="404"
+>
+  <meta slot="head" name="robots" content="noindex" />
+  <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <section class="not-found" aria-labelledby="not-found-title">
+      <p class="text-xs tracking-[0.2em] uppercase text-muted-foreground">
+        Yelihi / Page not found
+      </p>
+      <div class="not-found-content">
+        <p class="not-found-number" aria-hidden="true">404<span>.</span></p>
+        <div class="not-found-message">
+          <p class="mb-4 text-xs tracking-widest text-muted-foreground">
+            잠시, 다른 페이지로
+          </p>
+          <h1
+            id="not-found-title"
+            class="text-3xl sm:text-4xl tracking-tight leading-snug"
+          >
+            이곳에는 아직<br />이야기가 없네요.
+          </h1>
+          <p
+            class="mt-6 text-sm sm:text-base leading-relaxed text-muted-foreground"
+          >
+            주소가 바뀌었거나 사라진 페이지입니다.<br />글 목록에서 다른
+            이야기를 찾아보세요.
+          </p>
+          <div class="mt-8 flex flex-wrap gap-3">
+            <a
+              href="/articles/"
+              class={buttonVariants({ className: 'rounded-none h-11 px-6' })}
+            >
+              글 목록으로 <span aria-hidden="true">↗</span>
+            </a>
+            <a
+              href="/"
+              class={buttonVariants({
+                variant: 'outline',
+                className: 'rounded-none h-11 px-6',
+              })}>홈으로</a
+            >
+          </div>
+        </div>
+      </div>
+      <p class="border-t border-border pt-5 text-xs text-muted-foreground">
+        찾던 페이지는 없어도, 읽을 이야기는 남아 있습니다.
+      </p>
+    </section>
+  </main>
+</DefaultLayout>
+
+<style>
+  .not-found {
+    padding-block: clamp(3rem, 8vw, 7rem) 1rem;
+  }
+
+  .not-found-content {
+    display: grid;
+    gap: 2.5rem;
+    align-items: center;
+    padding-block: 2.5rem 4rem;
+  }
+
+  .not-found-number {
+    font-size: clamp(7rem, 24vw, 19rem);
+    font-weight: 500;
+    line-height: 1;
+    letter-spacing: -0.08em;
+  }
+
+  .not-found-number span {
+    color: var(--muted-foreground);
+  }
+
+  @media (min-width: 768px) {
+    .not-found-content {
+      grid-template-columns: 1fr 1fr;
+      padding-block: 4rem 5rem;
+    }
+
+    .not-found-message {
+      border-left: 1px solid var(--border);
+      padding-left: clamp(2rem, 5vw, 4rem);
+    }
+  }
+</style>
