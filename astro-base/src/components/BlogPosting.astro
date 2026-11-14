@@ -1,0 +1,33 @@
+---
+import { SITE_TITLE } from '../consts';
+
+interface Props {
+  title: string;
+  description: string;
+  date: string;
+  image?: string;
+  author?: string;
+}
+
+const { title, description, date, image, author = SITE_TITLE } = Astro.props;
+const schema = JSON.stringify({
+  '@context': 'https://schema.org',
+  '@type': 'BlogPosting',
+  headline: title,
+  description,
+  datePublished: date,
+  author: {
+    '@type': 'Person',
+    name: author,
+    url: new URL('/about/', Astro.site).href,
+  },
+  image: image ? new URL(image, Astro.site).href : undefined,
+  mainEntityOfPage: {
+    '@type': 'WebPage',
+    '@id': new URL(Astro.url.pathname, Astro.site).href,
+  },
+  inLanguage: 'ko',
+}).replaceAll('<', '\\u003c');
+---
+
+<script type="application/ld+json" set:html={schema} />

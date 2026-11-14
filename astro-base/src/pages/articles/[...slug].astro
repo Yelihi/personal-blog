@@ -7,6 +7,7 @@ import GiscusContainer from '@/components/react/GiscusContainer';
 import { TableOfContents } from '@/components/react/TableOfContents';
 import { transferImagesFormat } from '@/composables/transferImagesFormat';
 import DefaultLayout from '@/layouts/Default.astro';
+import BlogPosting from '@/components/BlogPosting.astro';
 import { ArrowLeft, Calendar, Clock, Tag } from 'lucide-react';
 
 import { type CollectionEntry, getCollection, render } from 'astro:content';
@@ -53,6 +54,14 @@ const relatedArticles = transferedImagesFormatAllArticles.filter(
   description={article.data.description ?? article.data.excerpt}
   currentPage="articles"
 >
+  <BlogPosting
+    slot="head"
+    title={article.data.title}
+    description={article.data.description ?? article.data.excerpt}
+    date={article.data.date.replaceAll('.', '-')}
+    image={article.data.coverImage?.src}
+    author={article.data.author}
+  />
   <article
     class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 sm:py-16 lg:py-24"
   >
