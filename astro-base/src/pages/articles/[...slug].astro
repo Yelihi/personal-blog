@@ -50,7 +50,7 @@ const relatedArticles = transferedImagesFormatAllArticles.filter(
 
 <DefaultLayout
   title={article.data.title}
-  description={article.data.description}
+  description={article.data.description ?? article.data.excerpt}
   currentPage="articles"
 >
   <article
