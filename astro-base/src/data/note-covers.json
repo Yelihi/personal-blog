@@ -65,6 +65,19 @@
         "photographerUrl": "https://unsplash.com/@monicatoner?utm_source=yelihi_notes&utm_medium=referral",
         "photoUrl": "https://unsplash.com/photos/body-of-water-oroFhZj_YA4?utm_source=yelihi_notes&utm_medium=referral"
       }
+    },
+    "2026-11-15": {
+      "source": "unsplash",
+      "src": "https://images.unsplash.com/photo-1550010423-676d1d83d8c9?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3wxMDk4OTcxfDB8MXxyYW5kb218fHx8fHx8fHwxNzk0NzgyNzc1fA&ixlib=rb-4.1.0&q=80&w=1080",
+      "width": 6000,
+      "height": 4000,
+      "alt": "white clouds and blue sky during daytime",
+      "attribution": {
+        "photoId": "U795MHAbvX8",
+        "photographer": "Ernest Brillo",
+        "photographerUrl": "https://unsplash.com/@ernest_brillo?utm_source=yelihi_notes&utm_medium=referral",
+        "photoUrl": "https://unsplash.com/photos/white-clouds-and-blue-sky-during-daytime-U795MHAbvX8?utm_source=yelihi_notes&utm_medium=referral"
+      }
     }
   }
 }
